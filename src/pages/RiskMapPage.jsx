@@ -1,11 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, Search, Filter, Sparkles, TrendingUp, AlertTriangle, ShieldCheck, ChevronRight, Layers, Eye, RefreshCw } from 'lucide-react';
+import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 import { PageHeader } from '../components/common/PageHeader';
 import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
+import { riskService } from '../services/riskService';
 
-// Mock High-Risk Location Dataset across India with realistic coordinates & detailed telemetry
+const MapResizer = () => {
+  const map = useMap();
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [map]);
+  return null;
+};
+
 const mockLocations = [
   {
     id: 'LOC-CHENNAI-04',
@@ -130,6 +143,7 @@ const mockLocations = [
 ];
 
 export const RiskMapPage = () => {
+  const [locations, setLocations] = useState(mockLocations);
   const [selectedLocation, setSelectedLocation] = useState(mockLocations[0]);
   const [searchQuery, setSearchQuery] = useState('');
   const [stateFilter, setStateFilter] = useState('All');
@@ -137,17 +151,31 @@ export const RiskMapPage = () => {
   const [roadCategoryFilter, setRoadCategoryFilter] = useState('All');
   const [activeTab, setActiveTab] = useState('overview');
 
-  // Filter Locations
-  const filteredLocations = mockLocations.filter((loc) => {
-    const matchesSearch = loc.name.toLowerCase().includes(searchQuery.toLowerCase()) || loc.city.toLowerCase().includes(searchQuery.toLowerCase());
+  useEffect(() => {
+    riskService.getLocations().then((res) => {
+      if (res && res.length > 0) {
+        setLocations(res);
+        setSelectedLocation(res[0]);
+      }
+    });
+  }, []);
+
+  const filteredLocations = locations.filter((loc) => {
+    const name = loc.name || '';
+    const city = loc.city || '';
+    const rCat = loc.roadCategory || loc.roadType || '';
+    const rLevel = loc.riskLevel || 'medium';
+
+    const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase()) || city.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesState = stateFilter === 'All' || loc.state === stateFilter;
-    const matchesRisk = riskFilter === 'All' || loc.riskLevel === riskFilter;
-    const matchesRoad = roadCategoryFilter === 'All' || loc.roadCategory === roadCategoryFilter;
+    const matchesRisk = riskFilter === 'All' || rLevel.toLowerCase() === riskFilter.toLowerCase();
+    const matchesRoad = roadCategoryFilter === 'All' || rCat.toLowerCase().includes(roadCategoryFilter.toLowerCase());
     return matchesSearch && matchesState && matchesRisk && matchesRoad;
   });
 
   const getMarkerColor = (riskLevel) => {
-    switch (riskLevel) {
+    const lvl = (riskLevel || '').toLowerCase();
+    switch (lvl) {
       case 'critical': return 'var(--risk-critical)';
       case 'high': return 'var(--risk-high)';
       case 'medium': return 'var(--risk-medium)';
@@ -166,7 +194,6 @@ export const RiskMapPage = () => {
         breadcrumbs={['Home', 'Risk Map']}
       />
 
-      {/* Filter Bar for Prompt 7 */}
       <div className="gov-card" style={{ marginBottom: '1.25rem', padding: '1rem' }}>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.85rem' }}>
           <div style={{ flex: '1 1 200px', position: 'relative' }}>
@@ -211,223 +238,273 @@ export const RiskMapPage = () => {
         </div>
       </div>
 
-      {/* Main Grid: GIS Risk Map Canvas (Left) + Location Intelligence Side Panel (Right) */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '1.25rem' }}>
-        {/* GIS Map Container */}
         <Card padding={false} style={{ height: '640px', overflow: 'hidden', position: 'relative' }}>
-          <div
-            style={{
-              width: '100%',
-              height: '100%',
-              background: 'var(--bg-surface) url("https://tile.openstreetmap.org/5/23/14.png") center/cover no-repeat',
-              position: 'relative',
-            }}
+          <MapContainer
+            center={[20.5937, 78.9629]}
+            zoom={5}
+            style={{ width: '100%', height: '100%', borderRadius: 'var(--radius-sm)' }}
+            scrollWheelZoom={true}
           >
-            {/* Map Overlay Backdrop Grid */}
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'rgba(15, 23, 42, 0.45)',
-                pointerEvents: 'none',
-              }}
+            <MapResizer />
+            <TileLayer
+              attribution='&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
             />
-
-            {/* Simulated Interactive GIS Hotspot Pins */}
             {filteredLocations.map((loc) => {
+              const lat = loc.lat ?? loc.latitude ?? 20.5937;
+              const lng = loc.lng ?? loc.longitude ?? 78.9629;
               const isSelected = selectedLocation?.id === loc.id;
+              const color = getMarkerColor(loc.riskLevel);
+
               return (
-                <div
+                <CircleMarker
                   key={loc.id}
-                  onClick={() => setSelectedLocation(loc)}
-                  style={{
-                    position: 'absolute',
-                    top: `${loc.yPercent}%`,
-                    left: `${loc.xPercent}%`,
-                    transform: isSelected ? 'translate(-50%, -50%) scale(1.15)' : 'translate(-50%, -50%)',
-                    cursor: 'pointer',
-                    zIndex: isSelected ? 30 : 10,
-                    transition: 'all 0.2s ease',
+                  center={[lat, lng]}
+                  radius={isSelected ? 14 : 10}
+                  pathOptions={{
+                    color: isSelected ? '#ffffff' : color,
+                    fillColor: color,
+                    fillOpacity: 0.85,
+                    weight: isSelected ? 3 : 1.5,
                   }}
-                  title={`${loc.name} - Risk Score: ${loc.riskScore}`}
+                  eventHandlers={{
+                    click: () => setSelectedLocation(loc),
+                  }}
                 >
-                  <div
-                    style={{
-                      background: getMarkerColor(loc.riskLevel),
-                      color: '#ffffff',
-                      padding: '0.35rem 0.65rem',
-                      borderRadius: 'var(--radius-sm)',
-                      fontWeight: 800,
-                      fontSize: '0.775rem',
-                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.35rem',
-                      border: isSelected ? '2px solid #ffffff' : '1px solid rgba(255,255,255,0.6)',
-                    }}
-                  >
-                    <MapPin size={14} />
-                    <span>{loc.riskScore} Risk</span>
-                  </div>
-                </div>
+                  <Popup>
+                    <div style={{ padding: '0.2rem', fontFamily: 'Inter, sans-serif' }}>
+                      <strong style={{ fontSize: '0.9rem', color: '#0f172a' }}>{loc.name}</strong>
+                      <div style={{ fontSize: '0.775rem', color: '#64748b', marginTop: '2px' }}>
+                        {loc.city}, {loc.state}
+                      </div>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 700, color: color, marginTop: '4px' }}>
+                        Risk Score: {loc.riskScore}/100 ({(loc.riskLevel || 'MEDIUM').toUpperCase()})
+                      </div>
+                    </div>
+                  </Popup>
+                </CircleMarker>
               );
             })}
+          </MapContainer>
 
-            {/* Map Controls Header */}
-            <div
-              style={{
-                position: 'absolute',
-                top: '12px',
-                left: '12px',
-                zIndex: 20,
-                background: 'var(--bg-card)',
-                border: '1px solid var(--border-color)',
-                padding: '0.4rem 0.75rem',
-                borderRadius: 'var(--radius-sm)',
-                fontSize: '0.775rem',
-                fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-              }}
-            >
-              <Layers size={14} style={{ color: 'var(--primary)' }} />
-              <span>OpenStreetMap Spatial Risk Layer</span>
+          <div
+            style={{
+              position: 'absolute',
+              top: '12px',
+              left: '12px',
+              zIndex: 1000,
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border-color)',
+              borderRadius: 'var(--radius-sm)',
+              padding: '0.4rem 0.75rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              fontSize: '0.775rem',
+              fontWeight: 600,
+              boxShadow: 'var(--shadow-sm)',
+            }}
+          >
+            <Layers size={14} style={{ color: 'var(--primary)' }} />
+            <span>Layer: MoRTH Hazard Hotspot Map</span>
+          </div>
+
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '12px',
+              left: '12px',
+              zIndex: 1000,
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border-color)',
+              borderRadius: 'var(--radius-sm)',
+              padding: '0.5rem 0.75rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem',
+              fontSize: '0.75rem',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+          >
+            <span style={{ fontWeight: 700, color: 'var(--text-subtle)' }}>Legend:</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--risk-critical)' }}></span>
+              <span>Critical (81-100)</span>
             </div>
-
-            {/* Map Legend Overlay (Prompt 7 Specification) */}
-            <div
-              style={{
-                position: 'absolute',
-                bottom: '12px',
-                left: '12px',
-                zIndex: 20,
-                background: 'var(--bg-card)',
-                border: '1px solid var(--border-color)',
-                padding: '0.65rem 0.85rem',
-                borderRadius: 'var(--radius-sm)',
-                fontSize: '0.75rem',
-              }}
-            >
-              <div style={{ fontWeight: 700, marginBottom: '0.3rem', color: 'var(--text-main)' }}>
-                Risk Score Classification
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                <span style={{ color: 'var(--risk-critical)', fontWeight: 700 }}>● 81–100: CRITICAL</span>
-                <span style={{ color: 'var(--risk-high)', fontWeight: 700 }}>● 61–80: HIGH</span>
-                <span style={{ color: 'var(--risk-medium)', fontWeight: 700 }}>● 31–60: MEDIUM</span>
-                <span style={{ color: 'var(--risk-low)', fontWeight: 700 }}>● 0–30: LOW</span>
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--risk-high)' }}></span>
+              <span>High (61-80)</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--risk-medium)' }}></span>
+              <span>Medium (31-60)</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--risk-low)' }}></span>
+              <span>Low (0-30)</span>
             </div>
           </div>
         </Card>
 
-        {/* Location Intelligence Side Panel (Prompt 8 Specification) */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <Card title="Location Intelligence Panel">
-            {selectedLocation ? (
-              <div>
-                {/* Header Info */}
-                <div style={{ marginBottom: '1rem', borderBottom: '1px solid var(--border-color-subtle)', paddingBottom: '0.85rem' }}>
-                  <div className="flex-between" style={{ marginBottom: '0.35rem' }}>
-                    <span style={{ fontSize: '0.775rem', fontWeight: 700, color: 'var(--text-subtle)' }}>{selectedLocation.id}</span>
-                    <Badge variant={selectedLocation.riskLevel} />
-                  </div>
-                  <h3 style={{ fontSize: '1.15rem', fontWeight: 800 }}>{selectedLocation.name}</h3>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                    {selectedLocation.city}, {selectedLocation.state} • {selectedLocation.roadCategory}
+        <div>
+          {selectedLocation ? (
+            <Card style={{ height: '640px', overflowY: 'auto' }}>
+              <div className="flex-between" style={{ marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
+                <div>
+                  <h2 style={{ fontSize: '1.15rem', fontWeight: 800 }}>{selectedLocation.name}</h2>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-subtle)' }}>
+                    {selectedLocation.city}, {selectedLocation.state} • {selectedLocation.roadCategory || selectedLocation.roadType}
                   </span>
                 </div>
+                <Badge variant={selectedLocation.riskLevel || 'medium'} size="lg" />
+              </div>
 
-                {/* Key Metrics Grid */}
-                <div className="grid-2" style={{ marginBottom: '1rem', gap: '0.5rem' }}>
-                  <div style={{ background: 'var(--bg-surface)', padding: '0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color-subtle)' }}>
-                    <span style={{ fontSize: '0.725rem', color: 'var(--text-subtle)' }}>Risk Score</span>
-                    <div style={{ fontSize: '1.25rem', fontWeight: 800, color: getMarkerColor(selectedLocation.riskLevel) }}>
-                      {selectedLocation.riskScore} / 100
-                    </div>
-                  </div>
-                  <div style={{ background: 'var(--bg-surface)', padding: '0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color-subtle)' }}>
-                    <span style={{ fontSize: '0.725rem', color: 'var(--text-subtle)' }}>Crash Trend</span>
-                    <div style={{ fontSize: '0.95rem', fontWeight: 700 }}>{selectedLocation.trend}</div>
-                  </div>
-                  <div style={{ background: 'var(--bg-surface)', padding: '0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color-subtle)' }}>
-                    <span style={{ fontSize: '0.725rem', color: 'var(--text-subtle)' }}>Accidents Recorded</span>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>{selectedLocation.accidents}</div>
-                  </div>
-                  <div style={{ background: 'var(--bg-surface)', padding: '0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color-subtle)' }}>
-                    <span style={{ fontSize: '0.725rem', color: 'var(--text-subtle)' }}>Fatalities</span>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--risk-critical)' }}>{selectedLocation.fatalities}</div>
-                  </div>
-                </div>
-
-                {/* Prompt 8 Specification: Explicit AI-Generated Insight */}
-                <div
-                  style={{
-                    background: 'var(--primary-subtle)',
-                    border: '1px solid var(--border-color)',
-                    padding: '0.85rem',
-                    borderRadius: 'var(--radius-sm)',
-                    marginBottom: '1rem',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.35rem' }}>
-                    <Sparkles size={15} style={{ color: 'var(--primary)' }} />
-                    <span style={{ fontSize: '0.775rem', fontWeight: 800, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                      AI-Generated Insight
+              <div className="grid-2" style={{ marginBottom: '1rem', background: 'var(--bg-surface)', padding: '0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color-subtle)' }}>
+                <div>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-subtle)', display: 'block', marginBottom: '0.2rem' }}>Safety Risk Index</span>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem' }}>
+                    <span style={{ fontSize: '1.8rem', fontWeight: 900, color: getMarkerColor(selectedLocation.riskLevel) }}>
+                      {selectedLocation.riskScore}
                     </span>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-subtle)' }}>/ 100</span>
                   </div>
-                  <p style={{ fontSize: '0.825rem', color: 'var(--text-main)', lineHeight: '1.45' }}>
-                    "{selectedLocation.aiInsight}"
-                  </p>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--text-subtle)', marginTop: '0.4rem', display: 'block' }}>
-                    Note: AI projections provide probabilistic risk estimates for prioritization purposes.
-                  </span>
                 </div>
-
-                {/* Intelligence Breakdown Tabs */}
-                <div style={{ borderTop: '1px solid var(--border-color-subtle)', paddingTop: '0.75rem' }}>
-                  <div style={{ display: 'flex', gap: '0.35rem', marginBottom: '0.75rem', overflowX: 'auto' }}>
-                    <button className={`gov-btn gov-btn-sm ${activeTab === 'overview' ? 'gov-btn-primary' : 'gov-btn-secondary'}`} onClick={() => setActiveTab('overview')}>
-                      Causes
-                    </button>
-                    <button className={`gov-btn gov-btn-sm ${activeTab === 'vru' ? 'gov-btn-primary' : 'gov-btn-secondary'}`} onClick={() => setActiveTab('vru')}>
-                      Vulnerable Users
-                    </button>
-                    <button className={`gov-btn gov-btn-sm ${activeTab === 'action' ? 'gov-btn-primary' : 'gov-btn-secondary'}`} onClick={() => setActiveTab('action')}>
-                      Intervention
-                    </button>
+                <div>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-subtle)', display: 'block', marginBottom: '0.2rem' }}>Crash Trend</span>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-main)', marginTop: '0.35rem' }}>
+                    {selectedLocation.trend || 'Stable →'}
                   </div>
-
-                  {activeTab === 'overview' && (
-                    <div style={{ fontSize: '0.825rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                      <div><strong>Primary Cause:</strong> {selectedLocation.primaryCause}</div>
-                      <div><strong>Time Peak:</strong> {selectedLocation.timePeak}</div>
-                      <div><strong>Road Profile:</strong> {selectedLocation.roadCharacteristics}</div>
-                    </div>
-                  )}
-
-                  {activeTab === 'vru' && (
-                    <div style={{ fontSize: '0.825rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                      <div><strong>Exposed User Class:</strong> {selectedLocation.vulnerableUsers}</div>
-                      <div><strong>Pedestrian Footfalls:</strong> High during peak hours</div>
-                    </div>
-                  )}
-
-                  {activeTab === 'action' && (
-                    <div style={{ fontSize: '0.825rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                      <div><strong>Recommended Engineering:</strong> {selectedLocation.intervention}</div>
-                      <Button variant="primary" size="sm" icon={Eye} style={{ marginTop: '0.5rem', width: '100%' }}>
-                        View Detailed Analysis
-                      </Button>
-                    </div>
-                  )}
                 </div>
               </div>
-            ) : (
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-subtle)' }}>Select a marker on the map to inspect spatial intelligence.</p>
-            )}
-          </Card>
+
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', borderBottom: '1px solid var(--border-color-subtle)', paddingBottom: '0.5rem' }}>
+                <button
+                  onClick={() => setActiveTab('overview')}
+                  style={{
+                    padding: '0.35rem 0.75rem',
+                    fontSize: '0.8rem',
+                    fontWeight: activeTab === 'overview' ? 700 : 500,
+                    border: 'none',
+                    background: activeTab === 'overview' ? 'var(--primary)' : 'transparent',
+                    color: activeTab === 'overview' ? '#ffffff' : 'var(--text-muted)',
+                    borderRadius: 'var(--radius-sm)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Overview
+                </button>
+                <button
+                  onClick={() => setActiveTab('telemetry')}
+                  style={{
+                    padding: '0.35rem 0.75rem',
+                    fontSize: '0.8rem',
+                    fontWeight: activeTab === 'telemetry' ? 700 : 500,
+                    border: 'none',
+                    background: activeTab === 'telemetry' ? 'var(--primary)' : 'transparent',
+                    color: activeTab === 'telemetry' ? '#ffffff' : 'var(--text-muted)',
+                    borderRadius: 'var(--radius-sm)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Telemetry
+                </button>
+                <button
+                  onClick={() => setActiveTab('action')}
+                  style={{
+                    padding: '0.35rem 0.75rem',
+                    fontSize: '0.8rem',
+                    fontWeight: activeTab === 'action' ? 700 : 500,
+                    border: 'none',
+                    background: activeTab === 'action' ? 'var(--primary)' : 'transparent',
+                    color: activeTab === 'action' ? '#ffffff' : 'var(--text-muted)',
+                    borderRadius: 'var(--radius-sm)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Action Plan
+                </button>
+              </div>
+
+              {activeTab === 'overview' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                  <div style={{ background: 'var(--primary-subtle)', padding: '0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--primary-border)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--primary)', fontWeight: 700, fontSize: '0.825rem', marginBottom: '0.35rem' }}>
+                      <Sparkles size={16} />
+                      <span>AI Safety Diagnostic</span>
+                    </div>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-main)', lineHeight: '1.45' }}>
+                      {selectedLocation.aiInsight || 'Risk score is evaluated using crash frequency, severity, and road hazard factors.'}
+                    </p>
+                  </div>
+
+                  <div className="grid-3" style={{ textAlign: 'center' }}>
+                    <div style={{ background: 'var(--bg-surface)', padding: '0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color-subtle)' }}>
+                      <span style={{ fontSize: '0.725rem', color: 'var(--text-subtle)' }}>Accidents</span>
+                      <strong style={{ display: 'block', fontSize: '1.1rem', fontWeight: 800 }}>{selectedLocation.accidents ?? selectedLocation.accidentCount ?? 0}</strong>
+                    </div>
+                    <div style={{ background: 'var(--bg-surface)', padding: '0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color-subtle)' }}>
+                      <span style={{ fontSize: '0.725rem', color: 'var(--text-subtle)' }}>Fatalities</span>
+                      <strong style={{ display: 'block', fontSize: '1.1rem', fontWeight: 800, color: 'var(--risk-critical)' }}>{selectedLocation.fatalities ?? 0}</strong>
+                    </div>
+                    <div style={{ background: 'var(--bg-surface)', padding: '0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color-subtle)' }}>
+                      <span style={{ fontSize: '0.725rem', color: 'var(--text-subtle)' }}>Injuries</span>
+                      <strong style={{ display: 'block', fontSize: '1.1rem', fontWeight: 800, color: 'var(--risk-high)' }}>{selectedLocation.injuries ?? 0}</strong>
+                    </div>
+                  </div>
+
+                  <div style={{ fontSize: '0.8rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.4rem 0', borderBottom: '1px dashed var(--border-color-subtle)' }}>
+                      <span style={{ color: 'var(--text-subtle)' }}>Dominant Cause:</span>
+                      <span style={{ fontWeight: 600 }}>{selectedLocation.primaryCause || 'Overspeeding'}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.4rem 0', borderBottom: '1px dashed var(--border-color-subtle)' }}>
+                      <span style={{ color: 'var(--text-subtle)' }}>Vulnerable Users:</span>
+                      <span style={{ fontWeight: 600 }}>{selectedLocation.vulnerableUsers || 'Two-Wheelers & Pedestrians'}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.4rem 0' }}>
+                      <span style={{ color: 'var(--text-subtle)' }}>High-Risk Hours:</span>
+                      <span style={{ fontWeight: 600 }}>{selectedLocation.timePeak || '18:00 - 21:00 Hours'}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'telemetry' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.8rem' }}>
+                  <div>
+                    <span style={{ color: 'var(--text-subtle)', display: 'block', marginBottom: '0.2rem' }}>Road Geometry & Infra:</span>
+                    <strong style={{ color: 'var(--text-main)' }}>{selectedLocation.roadCharacteristics || 'Dual Carriageway with Divider'}</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--text-subtle)', display: 'block', marginBottom: '0.2rem' }}>GPS Coordinates:</span>
+                    <code style={{ background: 'var(--bg-surface)', padding: '0.2rem 0.4rem', borderRadius: 'var(--radius-sm)' }}>
+                      {selectedLocation.lat ?? selectedLocation.latitude}, {selectedLocation.lng ?? selectedLocation.longitude}
+                    </code>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--text-subtle)', display: 'block', marginBottom: '0.2rem' }}>District Jurisdiction:</span>
+                    <strong>{selectedLocation.district || selectedLocation.city}, {selectedLocation.state}</strong>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'action' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                  <div style={{ background: 'var(--bg-surface)', padding: '0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-subtle)', display: 'block', marginBottom: '0.35rem' }}>Recommended Safety Countermeasure</span>
+                    <p style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--primary)', lineHeight: '1.4' }}>
+                      {selectedLocation.intervention || 'Deploy Automated Speed Radar Grid & Solar Illumination'}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </Card>
+          ) : (
+            <Card style={{ height: '640px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ color: 'var(--text-subtle)' }}>Select a hotspot pin on the GIS map</span>
+            </Card>
+          )}
         </div>
       </div>
     </div>

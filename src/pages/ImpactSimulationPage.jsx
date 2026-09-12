@@ -159,7 +159,7 @@ export const ImpactSimulationPage = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   {simulationResult.rankedInterventions.map((item, idx) => (
                     <div
-                      key={item.id}
+                      key={item.id || item.name || `sim-${idx}`}
                       style={{
                         padding: '0.65rem 0.85rem',
                         borderRadius: 'var(--radius-sm)',

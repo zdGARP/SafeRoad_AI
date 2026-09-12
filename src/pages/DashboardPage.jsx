@@ -77,7 +77,7 @@ export const DashboardPage = () => {
         <div className="grid-4" style={{ marginBottom: '1.5rem' }}>
           <StatCard
             title="Total Accidents"
-            value={summary.totalAccidents.toLocaleString()}
+            value={(summary.totalAccidents ?? 0).toLocaleString()}
             changePercent={summary.accidentsChange}
             trendDirection="down"
             comparisonPeriod={summary.comparisonPeriod}
@@ -85,7 +85,7 @@ export const DashboardPage = () => {
           />
           <StatCard
             title="Fatalities"
-            value={summary.fatalities.toLocaleString()}
+            value={(summary.fatalities ?? 0).toLocaleString()}
             changePercent={summary.fatalitiesChange}
             trendDirection="down"
             comparisonPeriod={summary.comparisonPeriod}
@@ -93,7 +93,7 @@ export const DashboardPage = () => {
           />
           <StatCard
             title="Injuries"
-            value={summary.injuries.toLocaleString()}
+            value={(summary.injuries ?? 0).toLocaleString()}
             changePercent={summary.injuriesChange}
             trendDirection="down"
             comparisonPeriod={summary.comparisonPeriod}
@@ -101,7 +101,7 @@ export const DashboardPage = () => {
           />
           <StatCard
             title="High-Risk Locations"
-            value={summary.highRiskLocations}
+            value={summary.highRiskLocations ?? 0}
             changePercent={summary.locationsChange}
             trendDirection="down"
             comparisonPeriod={summary.comparisonPeriod}
@@ -189,9 +189,9 @@ export const DashboardPage = () => {
                     <Badge variant={row.riskLevel} />
                   </td>
                   <td>
-                    <strong>{row.accidents}</strong> accidents • <span style={{ color: 'var(--risk-critical)', fontWeight: 700 }}>{row.fatalities} fatalities</span>
+                    <strong>{row.accidents ?? row.accidentCount ?? 0}</strong> accidents • <span style={{ color: 'var(--risk-critical)', fontWeight: 700 }}>{row.fatalities ?? 0} fatalities</span>
                   </td>
-                  <td style={{ color: 'var(--text-muted)' }}>{row.causes[0]?.cause}</td>
+                  <td style={{ color: 'var(--text-muted)' }}>{row.causes?.[0]?.cause || row.primaryCause || 'Overspeeding Hazard'}</td>
                   <td>
                     <Button variant="outline" size="sm" icon={ArrowUpRight}>
                       Inspect Location

@@ -427,6 +427,9 @@ h4 { font-size: 0.95rem; }
 .leaflet-container {
   font-family: 'Inter', sans-serif !important;
   border-radius: var(--radius-md);
+  height: 100% !important;
+  width: 100% !important;
+  min-height: 500px;
   z-index: 1;
 }
 
