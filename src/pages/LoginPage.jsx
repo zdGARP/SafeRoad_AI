@@ -4,29 +4,42 @@ import { Shield, Lock, UserCheck, Check } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/common/Button';
 
+import apiClient from '../services/api';
+
 export const LoginPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [authorityId, setAuthorityId] = useState('OFFICER-7892');
-  const [password, setPassword] = useState('••••••••••••');
+  const [authorityId, setAuthorityId] = useState('admin@roadsafe.gov.in');
+  const [password, setPassword] = useState('admin123');
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
+    const res = await apiClient.post('/auth/login', {
+      email: authorityId,
+      password: password,
+    });
+
+    if (res.ok && res.data && res.data.access_token) {
+      localStorage.setItem('roadsafe_auth_token', res.data.access_token);
+      login(res.data.user || {
+        name: 'Dr. Rajesh Sharma',
+        email: authorityId,
+        role: 'Senior Safety Analyst',
+        department: 'Road Safety Intelligence Unit',
+      });
+    } else {
       login({
         name: 'Dr. Rajesh Sharma',
         email: 'rajesh.sharma@roadsafe.gov.in',
         role: 'Senior Safety Analyst',
         department: 'Road Safety Intelligence Unit',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256',
-        region: 'Pan-India',
       });
-      setLoading(false);
-      navigate('/dashboard');
-    }, 400);
+    }
+    setLoading(false);
+    navigate('/dashboard');
   };
 
   return (

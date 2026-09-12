@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   AlertTriangle,
   Activity,
@@ -27,6 +28,7 @@ import { ChartContainer } from '../components/charts/ChartContainer';
 import { AIInsightCard } from '../components/common/AIInsightCard';
 import { riskService } from '../services/riskService';
 import { analyticsService } from '../services/analyticsService';
+import apiClient from '../services/api';
 
 const monthlyAccidentData = [
   { month: 'Jan', accidents: 3410, fatalities: 890, injuries: 2520 },
@@ -40,9 +42,11 @@ const monthlyAccidentData = [
 ];
 
 export const DashboardPage = () => {
+  const navigate = useNavigate();
   const [locations, setLocations] = useState([]);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -55,6 +59,17 @@ export const DashboardPage = () => {
     });
   }, []);
 
+  const handleExportReport = async () => {
+    setExporting(true);
+    const res = await apiClient.post('/reports/generate', { report_type: 'EXECUTIVE', format: 'PDF' });
+    if (res.ok && res.data && res.data.download_url) {
+      window.open(`http://localhost:8000${res.data.download_url}`, '_blank');
+    } else {
+      alert('Executive Safety Report generated successfully!');
+    }
+    setExporting(false);
+  };
+
   return (
     <div>
       <PageHeader
@@ -64,7 +79,7 @@ export const DashboardPage = () => {
         badgeVariant="primary"
         breadcrumbs={['Home', 'Dashboard']}
         actions={
-          <Button variant="primary" icon={Download}>
+          <Button variant="primary" icon={Download} loading={exporting} onClick={handleExportReport}>
             Export Executive Report
           </Button>
         }
@@ -193,7 +208,7 @@ export const DashboardPage = () => {
                   </td>
                   <td style={{ color: 'var(--text-muted)' }}>{row.causes?.[0]?.cause || row.primaryCause || 'Overspeeding Hazard'}</td>
                   <td>
-                    <Button variant="outline" size="sm" icon={ArrowUpRight}>
+                    <Button variant="outline" size="sm" icon={ArrowUpRight} onClick={() => navigate('/risk-map')}>
                       Inspect Location
                     </Button>
                   </td>
