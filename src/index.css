@@ -1,141 +1,219 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import 'leaflet/dist/leaflet.css';
+
+/* ==========================================================================
+   ROADSAFE INDIA — GOVERNMENT-STYLE FORMAL DIGITAL PORTAL DESIGN SYSTEM
+   Time-Based Adaptive Modes: Morning, Afternoon, Evening, Night
+   WCAG 2.1 AAA Contrast & Accessible Focus Rules
+   ========================================================================== */
 
 :root {
-  /* Color Palette - Dark Mode Defaults */
-  --bg-dark: #090d16;
-  --bg-darker: #05070c;
-  --bg-surface: #0f172a;
-  --bg-card: rgba(18, 26, 43, 0.75);
-  --bg-card-hover: rgba(26, 38, 63, 0.85);
-  --bg-card-border: rgba(255, 255, 255, 0.08);
-  --bg-card-border-glow: rgba(99, 102, 241, 0.35);
+  /* ------------------------------------------------------------------------
+     IMMUTABLE SEMANTIC RISK COLORS (Never change with time theme)
+     ------------------------------------------------------------------------ */
+  --risk-low: #15803d;
+  --risk-low-bg: #f0fdf4;
+  --risk-low-border: #bbf7d0;
 
-  --bg-sidebar: #0f172a;
-  --bg-topbar: rgba(15, 23, 42, 0.85);
+  --risk-medium: #b45309;
+  --risk-medium-bg: #fffbeb;
+  --risk-medium-border: #fde68a;
 
-  /* Primary & Accent Colors */
-  --primary: #6366f1;
-  --primary-hover: #4f46e5;
-  --primary-glow: rgba(99, 102, 241, 0.25);
-  
-  --secondary: #06b6d4;
-  --secondary-hover: #0891b2;
+  --risk-high: #c2410c;
+  --risk-high-bg: #fff7ed;
+  --risk-high-border: #ffedd5;
 
-  /* Risk & Status Colors */
-  --risk-low: #10b981;
-  --risk-low-bg: rgba(16, 185, 129, 0.15);
-  --risk-low-border: rgba(16, 185, 129, 0.3);
+  --risk-critical: #b91c1c;
+  --risk-critical-bg: #fef2f2;
+  --risk-critical-border: #fecaca;
 
-  --risk-moderate: #f59e0b;
-  --risk-moderate-bg: rgba(245, 158, 11, 0.15);
-  --risk-moderate-border: rgba(245, 158, 11, 0.3);
+  /* UI Shapes & Layout Spacing */
+  --sidebar-width: 250px;
+  --sidebar-collapsed-width: 70px;
+  --topbar-height: 64px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --border-thin: 1px solid var(--border-color);
 
-  --risk-high: #f97316;
-  --risk-high-bg: rgba(249, 115, 22, 0.15);
-  --risk-high-border: rgba(249, 115, 22, 0.3);
-
-  --risk-critical: #ef4444;
-  --risk-critical-bg: rgba(239, 68, 68, 0.15);
-  --risk-critical-border: rgba(239, 68, 68, 0.3);
-
-  /* Text Colors */
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-subtle: #64748b;
-
-  /* UI Dimensions & Shapes */
-  --sidebar-width: 260px;
-  --sidebar-collapsed-width: 76px;
-  --topbar-height: 70px;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-  --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.25);
-  --shadow-glow: 0 0 25px rgba(99, 102, 241, 0.15);
+  /* Transition speeds */
+  --theme-transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Light Theme Overrides */
-[data-theme='light'] {
-  --bg-dark: #f1f5f9;
-  --bg-darker: #e2e8f0;
-  --bg-surface: #ffffff;
-  --bg-card: rgba(255, 255, 255, 0.9);
-  --bg-card-hover: rgba(248, 250, 252, 1);
-  --bg-card-border: rgba(0, 0, 0, 0.08);
-  --bg-card-border-glow: rgba(99, 102, 241, 0.35);
+/* --------------------------------------------------------------------------
+   TIME-BASED THEME MODES
+   -------------------------------------------------------------------------- */
 
-  --bg-sidebar: #1e293b;
-  --bg-topbar: rgba(255, 255, 255, 0.9);
+/* 1. MORNING MODE (05:00 - 11:59): Bright soft background, fresh teal/blue accents */
+[data-time-mode='morning'] {
+  --bg-page: #f1f5f9;
+  --bg-surface: #ffffff;
+  --bg-card: #ffffff;
+  --bg-sidebar: #0f172a;
+  --bg-topbar: #ffffff;
+  --border-color: #cbd5e1;
+  --border-color-subtle: #e2e8f0;
+
+  --primary: #0f766e;
+  --primary-hover: #0d9488;
+  --primary-subtle: #ccfbf1;
+  --accent: #0284c7;
 
   --text-main: #0f172a;
-  --text-muted: #475569;
-  --text-subtle: #94a3b8;
-
-  --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.06);
+  --text-muted: #334155;
+  --text-subtle: #64748b;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-/* Global Reset */
+/* 2. AFTERNOON MODE (12:00 - 16:59): Crisp white/light-gray, professional blue accent */
+[data-time-mode='afternoon'] {
+  --bg-page: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-card: #ffffff;
+  --bg-sidebar: #1e293b;
+  --bg-topbar: #ffffff;
+  --border-color: #cbd5e1;
+  --border-color-subtle: #e2e8f0;
+
+  --primary: #1d4ed8;
+  --primary-hover: #2563eb;
+  --primary-subtle: #dbeafe;
+  --accent: #0369a1;
+
+  --text-main: #0f172a;
+  --text-muted: #334155;
+  --text-subtle: #475569;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* 3. EVENING MODE (17:00 - 20:59): Warmer neutral surfaces, deep navy accents */
+[data-time-mode='evening'] {
+  --bg-page: #e2e8f0;
+  --bg-surface: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-sidebar: #0f172a;
+  --bg-topbar: #f1f5f9;
+  --border-color: #94a3b8;
+  --border-color-subtle: #cbd5e1;
+
+  --primary: #1e3a8a;
+  --primary-hover: #1e40af;
+  --primary-subtle: #e0e7ff;
+  --accent: #0369a1;
+
+  --text-main: #0f172a;
+  --text-muted: #1e293b;
+  --text-subtle: #475569;
+  --shadow-card: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* 4. NIGHT MODE (21:00 - 04:59): Dark charcoal/navy, muted blue accents (NO pure black) */
+[data-time-mode='night'] {
+  --bg-page: #0f172a;
+  --bg-surface: #1e293b;
+  --bg-card: #1e293b;
+  --bg-sidebar: #0b1120;
+  --bg-topbar: #1e293b;
+  --border-color: #334155;
+  --border-color-subtle: #475569;
+
+  --primary: #3b82f6;
+  --primary-hover: #60a5fa;
+  --primary-subtle: rgba(59, 130, 246, 0.15);
+  --accent: #38bdf8;
+
+  --text-main: #f8fafc;
+  --text-muted: #cbd5e1;
+  --text-subtle: #94a3b8;
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.25);
+
+  /* Adjust risk background tint for dark mode readability */
+  --risk-low-bg: rgba(22, 163, 74, 0.15);
+  --risk-medium-bg: rgba(217, 119, 6, 0.15);
+  --risk-high-bg: rgba(234, 88, 12, 0.15);
+  --risk-critical-bg: rgba(220, 38, 38, 0.15);
+  --risk-low: #4ade80;
+  --risk-medium: #fbbf24;
+  --risk-high: #fb923c;
+  --risk-critical: #f87171;
+}
+
+/* --------------------------------------------------------------------------
+   GLOBAL RESET & ACCESSIBILITY TYPOGRAPHY
+   -------------------------------------------------------------------------- */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+/* Font Size Scaling Options */
+.font-scale-normal { font-size: 16px; }
+.font-scale-large { font-size: 18px; }
+.font-scale-xlarge { font-size: 20px; }
+
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: var(--bg-dark);
+  background-color: var(--bg-page);
   color: var(--text-main);
-  min-height: 100vh;
-  overflow-x: hidden;
   line-height: 1.5;
+  transition: var(--theme-transition);
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
 }
 
+/* Visible Keyboard Focus States (WCAG Requirement) */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Reduced Motion Mode */
+.reduced-motion *, .reduced-motion *::before, .reduced-motion *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Typography Hierarchy */
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Outfit', sans-serif;
-  font-weight: 600;
-  letter-spacing: -0.02em;
   color: var(--text-main);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
+h1 { font-size: 1.5rem; }
+h2 { font-size: 1.25rem; }
+h3 { font-size: 1.1rem; }
+h4 { font-size: 0.95rem; }
 
-/* Glassmorphism & Card Utility */
-.glass-panel {
+/* --------------------------------------------------------------------------
+   INSTITUTIONAL CARD & CONTAINER PRIMITIVES
+   -------------------------------------------------------------------------- */
+.gov-card {
   background: var(--bg-card);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--bg-card-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-subtle);
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  border: var(--border-thin);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 1.25rem;
+  transition: var(--theme-transition);
 }
 
-.glass-panel:hover {
-  border-color: rgba(255, 255, 255, 0.16);
+.gov-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.85rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color-subtle);
 }
 
-.glass-panel-glow:hover {
-  border-color: var(--bg-card-border-glow);
-  box-shadow: var(--shadow-glow);
-}
-
-/* Layout Utilities */
+/* Layout Container */
 .app-container {
   display: flex;
   min-height: 100vh;
@@ -147,317 +225,219 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .main-content {
   flex: 1;
-  padding: 1.75rem 2rem;
+  padding: 1.5rem 2rem;
   max-width: 1600px;
   margin: 0 auto;
   width: 100%;
-  animation: fadeIn 0.3s ease-in-out;
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1rem;
+  }
 }
 
-@keyframes slideInRight {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
-}
+/* Grid Utilities */
+.grid-1 { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
 
-@keyframes pulseGlow {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.08); }
-}
-
-.animate-pulse {
-  animation: pulseGlow 2s infinite ease-in-out;
-}
-
-/* Grid & Flex Grids */
-.grid-1 { display: grid; grid-template-columns: repeat(1, 1fr); gap: 1.25rem; }
-.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
-.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
-.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; }
-
-@media (max-width: 1200px) {
+@media (max-width: 1024px) {
   .grid-4 { grid-template-columns: repeat(2, 1fr); }
   .grid-3 { grid-template-columns: repeat(2, 1fr); }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
-  .main-content { padding: 1.25rem 1rem; }
 }
 
-/* Flex Helpers */
 .flex-between { display: flex; align-items: center; justify-content: space-between; }
 .flex-center { display: flex; align-items: center; justify-content: center; }
-.flex-row { display: flex; align-items: center; gap: 0.75rem; }
+.flex-row { display: flex; align-items: center; gap: 0.5rem; }
 .flex-col { display: flex; flex-direction: column; gap: 0.5rem; }
 
-/* Buttons */
-.btn {
+/* --------------------------------------------------------------------------
+   FORM CONTROLS & BUTTONS
+   -------------------------------------------------------------------------- */
+.gov-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.6rem 1.25rem;
+  padding: 0.55rem 1rem;
   font-size: 0.875rem;
-  font-weight: 500;
-  border-radius: var(--radius-md);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.2s ease;
+  font-family: inherit;
+  transition: all 0.15s ease;
   white-space: nowrap;
-  user-select: none;
-  font-family: 'Inter', sans-serif;
 }
 
-.btn-primary {
-  background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
+.gov-btn-primary {
+  background-color: var(--primary);
   color: #ffffff;
-  box-shadow: 0 4px 14px var(--primary-glow);
-}
-.btn-primary:hover {
-  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
-  transform: translateY(-1px);
-}
-
-.btn-secondary {
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text-main);
-  border: 1px solid var(--bg-card-border);
-}
-.btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.btn-outline {
-  background: transparent;
-  color: var(--primary);
-  border: 1px solid rgba(99, 102, 241, 0.4);
-}
-.btn-outline:hover {
-  background: rgba(99, 102, 241, 0.1);
   border-color: var(--primary);
 }
-
-.btn-danger {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
-.btn-danger:hover {
-  background: rgba(239, 68, 68, 0.25);
+.gov-btn-primary:hover {
+  background-color: var(--primary-hover);
 }
 
-.btn-icon {
-  padding: 0.5rem;
-  border-radius: var(--radius-md);
-  color: var(--text-muted);
-  background: transparent;
-}
-.btn-icon:hover {
+.gov-btn-secondary {
+  background-color: var(--bg-surface);
   color: var(--text-main);
-  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--border-color);
+}
+.gov-btn-secondary:hover {
+  background-color: var(--border-color-subtle);
 }
 
-.btn-sm { padding: 0.4rem 0.85rem; font-size: 0.775rem; }
-.btn-lg { padding: 0.85rem 1.75rem; font-size: 1rem; }
-
-/* Badges */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.25rem 0.65rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  border-radius: 9999px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+.gov-btn-outline {
+  background-color: transparent;
+  color: var(--primary);
+  border-color: var(--primary);
+}
+.gov-btn-outline:hover {
+  background-color: var(--primary-subtle);
 }
 
-.badge-low {
-  background: var(--risk-low-bg);
-  color: var(--risk-low);
-  border: 1px solid var(--risk-low-border);
-}
-
-.badge-moderate {
-  background: var(--risk-moderate-bg);
-  color: var(--risk-moderate);
-  border: 1px solid var(--risk-moderate-border);
-}
-
-.badge-high {
-  background: var(--risk-high-bg);
-  color: var(--risk-high);
-  border: 1px solid var(--risk-high-border);
-}
-
-.badge-critical {
-  background: var(--risk-critical-bg);
+.gov-btn-danger {
+  background-color: var(--risk-critical-bg);
   color: var(--risk-critical);
-  border: 1px solid var(--risk-critical-border);
+  border-color: var(--risk-critical-border);
 }
 
-.badge-primary {
-  background: rgba(99, 102, 241, 0.15);
-  color: var(--primary);
-  border: 1px solid rgba(99, 102, 241, 0.3);
-}
+.gov-btn-sm { padding: 0.35rem 0.75rem; font-size: 0.8rem; }
+.gov-btn-lg { padding: 0.75rem 1.5rem; font-size: 1rem; }
 
-.badge-neutral {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text-muted);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Stat Cards */
-.stat-card {
-  padding: 1.25rem 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.stat-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: var(--card-accent, var(--primary));
-  border-radius: 4px 0 0 4px;
-}
-
-.stat-icon-wrapper {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--card-accent, var(--primary));
-}
-
-.stat-value {
-  font-family: 'Outfit', sans-serif;
-  font-size: 1.85rem;
-  font-weight: 700;
-  line-height: 1.1;
-  color: var(--text-main);
-}
-
-.stat-label {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}
-
-.stat-trend {
-  font-size: 0.775rem;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.trend-up { color: #ef4444; }
-.trend-down { color: #10b981; }
-
-/* Filter Controls */
-.filter-bar {
-  padding: 1rem 1.25rem;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.filter-select, .filter-input {
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid var(--bg-card-border);
-  color: var(--text-main);
-  padding: 0.55rem 0.9rem;
-  font-size: 0.85rem;
-  border-radius: var(--radius-md);
-  outline: none;
-  transition: border-color 0.2s ease;
-}
-
-.filter-select:focus, .filter-input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px var(--primary-glow);
-}
-
-/* Form Inputs */
-.form-input {
+/* Inputs */
+.gov-input, .gov-select {
   width: 100%;
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid var(--bg-card-border);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
   color: var(--text-main);
-  padding: 0.75rem 1rem;
-  font-size: 0.9rem;
-  border-radius: var(--radius-md);
+  padding: 0.55rem 0.85rem;
+  font-size: 0.875rem;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+}
+
+.gov-input:focus, .gov-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-subtle);
   outline: none;
 }
 
-.form-input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-glow);
-}
-
-.form-label {
+.gov-label {
   display: block;
-  font-size: 0.85rem;
-  font-weight: 500;
+  font-size: 0.825rem;
+  font-weight: 600;
   color: var(--text-muted);
   margin-bottom: 0.35rem;
 }
 
-/* Table Design */
+/* --------------------------------------------------------------------------
+   ACCESSIBLE DUAL-COMMUNICATION BADGES (Never color alone)
+   -------------------------------------------------------------------------- */
+.gov-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.775rem;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  letter-spacing: 0.02em;
+}
+
+.gov-badge-low {
+  background-color: var(--risk-low-bg);
+  color: var(--risk-low);
+  border-color: var(--risk-low-border);
+}
+
+.gov-badge-medium {
+  background-color: var(--risk-medium-bg);
+  color: var(--risk-medium);
+  border-color: var(--risk-medium-border);
+}
+
+.gov-badge-high {
+  background-color: var(--risk-high-bg);
+  color: var(--risk-high);
+  border-color: var(--risk-high-border);
+}
+
+.gov-badge-critical {
+  background-color: var(--risk-critical-bg);
+  color: var(--risk-critical);
+  border-color: var(--risk-critical-border);
+}
+
+.gov-badge-neutral {
+  background-color: var(--border-color-subtle);
+  color: var(--text-muted);
+  border-color: var(--border-color);
+}
+
+/* --------------------------------------------------------------------------
+   TABLES
+   -------------------------------------------------------------------------- */
 .table-responsive {
   width: 100%;
   overflow-x: auto;
 }
 
-.custom-table {
+.gov-table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
   font-size: 0.875rem;
 }
 
-.custom-table th {
-  padding: 0.85rem 1rem;
-  background: rgba(255, 255, 255, 0.03);
+.gov-table th {
+  padding: 0.75rem 1rem;
+  background-color: var(--bg-surface);
   color: var(--text-muted);
-  font-weight: 600;
-  border-bottom: 1px solid var(--bg-card-border);
+  font-weight: 700;
+  border-bottom: 2px solid var(--border-color);
+  font-size: 0.775rem;
   text-transform: uppercase;
-  font-size: 0.725rem;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.03em;
 }
 
-.custom-table td {
-  padding: 0.95rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+.gov-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border-color-subtle);
   color: var(--text-main);
 }
 
-.custom-table tr:hover td {
-  background: rgba(255, 255, 255, 0.02);
+.gov-table tr:hover td {
+  background-color: var(--border-color-subtle);
+}
+
+/* Leaflet Map Custom Overrides */
+.leaflet-container {
+  font-family: 'Inter', sans-serif !important;
+  border-radius: var(--radius-md);
+  z-index: 1;
+}
+
+.custom-map-pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: white;
+  font-weight: 800;
+  font-size: 0.75rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  border: 2px solid #ffffff;
 }

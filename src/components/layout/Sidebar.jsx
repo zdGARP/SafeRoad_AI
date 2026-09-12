@@ -42,15 +42,13 @@ export const Sidebar = () => {
 
   return (
     <>
-      {/* Mobile Backdrop */}
       {mobileSidebarOpen && (
         <div
           onClick={() => setMobileSidebarOpen(false)}
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(0,0,0,0.6)',
-            backdropFilter: 'blur(4px)',
+            background: 'rgba(0,0,0,0.5)',
             zIndex: 900,
           }}
         />
@@ -60,86 +58,84 @@ export const Sidebar = () => {
         style={{
           width: sidebarCollapsed ? 'var(--sidebar-collapsed-width)' : 'var(--sidebar-width)',
           background: 'var(--bg-sidebar)',
-          borderRight: '1px solid var(--bg-card-border)',
+          borderRight: '1px solid var(--border-color)',
           display: 'flex',
           flexDirection: 'column',
           height: '100vh',
           position: 'sticky',
           top: 0,
           zIndex: 950,
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: 'var(--theme-transition)',
           overflow: 'hidden',
-          boxShadow: '4px 0 24px rgba(0,0,0,0.2)',
         }}
-        className={mobileSidebarOpen ? 'sidebar-mobile-open' : ''}
       >
-        {/* Brand Logo & Header */}
+        {/* Brand Header */}
         <div
           className="flex-between"
           style={{
             height: 'var(--topbar-height)',
-            padding: sidebarCollapsed ? '0 0.85rem' : '0 1.25rem',
-            borderBottom: '1px solid var(--bg-card-border)',
+            padding: sidebarCollapsed ? '0 0.75rem' : '0 1rem',
+            borderBottom: '1px solid var(--border-color)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
             <div
               style={{
-                width: 38,
-                height: 38,
-                borderRadius: '10px',
-                background: 'linear-gradient(135deg, #6366f1 0%, #06b6d4 100%)',
+                width: 34,
+                height: 34,
+                borderRadius: 'var(--radius-sm)',
+                background: 'var(--primary)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#fff',
-                boxShadow: '0 4px 12px rgba(99, 102, 241, 0.4)',
+                color: '#ffffff',
                 flexShrink: 0,
               }}
             >
-              <Shield size={22} />
+              <Shield size={20} aria-hidden="true" />
             </div>
             {!sidebarCollapsed && (
               <div>
-                <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
-                  RoadSafe<span style={{ color: 'var(--primary)' }}>.AI</span>
+                <h2 style={{ fontSize: '1rem', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+                  ROADSAFE INDIA
                 </h2>
-                <span style={{ fontSize: '0.675rem', color: 'var(--text-subtle)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>
-                  India Safety Platform
+                <span style={{ fontSize: '0.65rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
+                  Safety Intelligence
                 </span>
               </div>
             )}
           </div>
 
           <button
-            className="btn-icon"
+            className="gov-btn gov-btn-secondary gov-btn-sm"
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            style={{ display: 'flex' }}
-            title={sidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+            style={{ padding: '0.25rem', background: 'transparent', borderColor: 'transparent', color: '#cbd5e1' }}
+            title={sidebarCollapsed ? 'Expand Navigation' : 'Collapse Navigation'}
+            aria-label="Toggle Navigation Sidebar"
           >
             {sidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
           </button>
         </div>
 
-        {/* Navigation List */}
-        <div style={{ flex: 1, padding: '1rem 0.75rem', overflowY: 'auto' }}>
+        {/* Nav List */}
+        <div style={{ flex: 1, padding: '0.85rem 0.5rem', overflowY: 'auto' }}>
           {!sidebarCollapsed && (
             <p
               style={{
-                fontSize: '0.7rem',
+                fontSize: '0.675rem',
                 fontWeight: 700,
-                color: 'var(--text-subtle)',
+                color: '#64748b',
                 textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-                marginBottom: '0.75rem',
+                letterSpacing: '0.06em',
+                marginBottom: '0.5rem',
                 paddingLeft: '0.5rem',
               }}
             >
-              Analytics Modules
+              Portal Modules
             </p>
           )}
 
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
             {navigationItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
@@ -152,36 +148,20 @@ export const Sidebar = () => {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.85rem',
-                    padding: sidebarCollapsed ? '0.75rem' : '0.7rem 0.85rem',
+                    gap: '0.75rem',
+                    padding: sidebarCollapsed ? '0.65rem' : '0.6rem 0.75rem',
                     justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
-                    borderRadius: 'var(--radius-md)',
-                    color: isActive ? '#ffffff' : 'var(--text-muted)',
-                    background: isActive
-                      ? 'linear-gradient(90deg, rgba(99, 102, 241, 0.25) 0%, rgba(99, 102, 241, 0.08) 100%)'
-                      : 'transparent',
-                    borderLeft: isActive ? '3px solid var(--primary)' : '3px solid transparent',
+                    borderRadius: 'var(--radius-sm)',
+                    color: isActive ? '#ffffff' : '#cbd5e1',
+                    background: isActive ? 'var(--primary)' : 'transparent',
                     textDecoration: 'none',
-                    fontWeight: isActive ? 600 : 400,
-                    fontSize: '0.875rem',
+                    fontWeight: isActive ? 700 : 500,
+                    fontSize: '0.85rem',
                     transition: 'all 0.15s ease',
-                    position: 'relative',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)';
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) e.currentTarget.style.background = 'transparent';
                   }}
                   title={sidebarCollapsed ? item.label : undefined}
                 >
-                  <Icon
-                    size={20}
-                    style={{
-                      color: isActive ? 'var(--primary)' : 'var(--text-subtle)',
-                      flexShrink: 0,
-                    }}
-                  />
+                  <Icon size={18} aria-hidden="true" style={{ flexShrink: 0 }} />
                   {!sidebarCollapsed && <span>{item.label}</span>}
                 </NavLink>
               );
@@ -189,27 +169,23 @@ export const Sidebar = () => {
           </nav>
         </div>
 
-        {/* Footer Status Panel */}
+        {/* Status Bar */}
         <div
           style={{
-            padding: sidebarCollapsed ? '0.85rem 0.5rem' : '0.85rem 1rem',
-            borderTop: '1px solid var(--bg-card-border)',
+            padding: sidebarCollapsed ? '0.75rem 0.5rem' : '0.75rem 1rem',
+            borderTop: '1px solid var(--border-color)',
             background: 'rgba(0, 0, 0, 0.2)',
           }}
         >
-          {sidebarCollapsed ? (
-            <div className="flex-center" title="AI Monitoring System Online">
-              <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#10b981' }} className="animate-pulse" />
-            </div>
-          ) : (
+          {!sidebarCollapsed && (
             <div className="flex-between">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981' }} className="animate-pulse" />
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-                  AI Core Engine Active
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e' }} />
+                <span style={{ fontSize: '0.725rem', color: '#cbd5e1', fontWeight: 600 }}>
+                  System Active
                 </span>
               </div>
-              <Activity size={14} style={{ color: 'var(--primary)' }} />
+              <Activity size={13} style={{ color: '#38bdf8' }} />
             </div>
           )}
         </div>

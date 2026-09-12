@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext();
 
@@ -6,7 +6,7 @@ export const initialNotifications = [
   {
     id: 1,
     title: 'Critical Blackspot Risk Alert',
-    message: 'High accident probability predicted on NH-44 KM 142-148 (Ambala Section) due to fog and heavy freight merge.',
+    message: 'High accident probability predicted on NH Junction 04 (Chennai Section) due to fog and freight merge.',
     type: 'critical',
     time: '12 mins ago',
     unread: true,
@@ -27,48 +27,101 @@ export const initialNotifications = [
     time: '3 hours ago',
     unread: true,
   },
-  {
-    id: 4,
-    title: 'Vulnerability Threshold Exceeded',
-    message: 'Two-wheeler fatality risk index rose by 14% in Bengaluru Urban District during peak evening hours.',
-    type: 'warning',
-    time: '5 hours ago',
-    unread: false,
-  },
 ];
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState({
     name: 'Dr. Rajesh Sharma',
-    email: 'rajesh.sharma@morth.gov.in',
-    role: 'National Safety Chief',
-    department: 'Ministry of Road Transport & Highways',
+    email: 'rajesh.sharma@roadsafe.gov.in',
+    role: 'Senior Road Safety Analyst',
+    department: 'Road Safety Intelligence Division',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256',
-    region: 'All States / Pan-India',
+    region: 'Pan-India',
   });
 
   const [isAuthenticated, setIsAuthenticated] = useState(true);
-  const [theme, setTheme] = useState('dark');
+
+  // Timezone & Time-Based UI Engine (Prompt 3)
+  const [systemTimezone, setSystemTimezone] = useState('');
+  const [currentTimeStr, setCurrentTimeStr] = useState('');
+  const [timeMode, setTimeMode] = useState('afternoon'); // morning | afternoon | evening | night
+  const [manualTimeModeOverride, setManualTimeModeOverride] = useState(null);
+
+  // Accessibility Controls (Prompt 4)
+  const [fontSizeScale, setFontSizeScale] = useState('normal'); // normal | large | xlarge
+  const [reducedMotion, setReducedMotion] = useState(false);
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [notifications, setNotifications] = useState(initialNotifications);
   const [notificationDrawerOpen, setNotificationDrawerOpen] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState('Pan-India');
 
-  const toggleTheme = () => {
-    const nextTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(nextTheme);
-    document.documentElement.setAttribute('data-theme', nextTheme);
+  // Detect system timezone and calculate current local hour mode
+  useEffect(() => {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Local System Time';
+      setSystemTimezone(tz);
+    } catch {
+      setSystemTimezone('Local System Time');
+    }
+
+    const updateSystemClockAndMode = () => {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      const formattedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+      setCurrentTimeStr(formattedTime);
+
+      // Determine Time Mode
+      let calculatedMode = 'afternoon';
+      if (hours >= 5 && hours < 12) {
+        calculatedMode = 'morning';
+      } else if (hours >= 12 && hours < 17) {
+        calculatedMode = 'afternoon';
+      } else if (hours >= 17 && hours < 21) {
+        calculatedMode = 'evening';
+      } else {
+        calculatedMode = 'night';
+      }
+
+      const activeMode = manualTimeModeOverride || calculatedMode;
+      setTimeMode(activeMode);
+      document.documentElement.setAttribute('data-time-mode', activeMode);
+    };
+
+    updateSystemClockAndMode();
+    const interval = setInterval(updateSystemClockAndMode, 30000);
+    return () => clearInterval(interval);
+  }, [manualTimeModeOverride]);
+
+  // Apply Accessibility Classes to Document Root
+  useEffect(() => {
+    document.documentElement.classList.remove('font-scale-normal', 'font-scale-large', 'font-scale-xlarge');
+    document.documentElement.classList.add(`font-scale-${fontSizeScale}`);
+
+    if (reducedMotion) {
+      document.documentElement.classList.add('reduced-motion');
+    } else {
+      document.documentElement.classList.remove('reduced-motion');
+    }
+  }, [fontSizeScale, reducedMotion]);
+
+  const toggleManualTimeMode = () => {
+    const modes = ['morning', 'afternoon', 'evening', 'night'];
+    const currentIndex = modes.indexOf(timeMode);
+    const nextMode = modes[(currentIndex + 1) % modes.length];
+    setManualTimeModeOverride(nextMode);
   };
 
   const login = (userData) => {
     setUser(userData || {
       name: 'Dr. Rajesh Sharma',
-      email: 'rajesh.sharma@morth.gov.in',
-      role: 'National Safety Chief',
-      department: 'Ministry of Road Transport & Highways',
+      email: 'rajesh.sharma@roadsafe.gov.in',
+      role: 'Senior Road Safety Analyst',
+      department: 'Road Safety Intelligence Division',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256',
-      region: 'All States / Pan-India',
+      region: 'Pan-India',
     });
     setIsAuthenticated(true);
   };
@@ -94,8 +147,15 @@ export const AuthProvider = ({ children }) => {
       value={{
         user,
         isAuthenticated,
-        theme,
-        toggleTheme,
+        systemTimezone,
+        currentTimeStr,
+        timeMode,
+        toggleManualTimeMode,
+        setManualTimeModeOverride,
+        fontSizeScale,
+        setFontSizeScale,
+        reducedMotion,
+        setReducedMotion,
         login,
         logout,
         sidebarCollapsed,

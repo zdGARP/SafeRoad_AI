@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Lock, Mail, ArrowRight, CheckCircle, Sparkles } from 'lucide-react';
+import { Shield, Lock, UserCheck, Check } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/common/Button';
-import { Badge } from '../components/common/Badge';
 
 export const LoginPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('rajesh.sharma@morth.gov.in');
+  const [authorityId, setAuthorityId] = useState('OFFICER-7892');
   const [password, setPassword] = useState('••••••••••••');
-  const [role, setRole] = useState('National Safety Chief');
+  const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = (e) => {
@@ -19,20 +18,15 @@ export const LoginPage = () => {
     setTimeout(() => {
       login({
         name: 'Dr. Rajesh Sharma',
-        email,
-        role,
-        department: 'Ministry of Road Transport & Highways',
+        email: 'rajesh.sharma@roadsafe.gov.in',
+        role: 'Senior Safety Analyst',
+        department: 'Road Safety Intelligence Unit',
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256',
         region: 'Pan-India',
       });
       setLoading(false);
       navigate('/dashboard');
-    }, 600);
-  };
-
-  const handleDemoFill = (selectedRole, demoEmail) => {
-    setRole(selectedRole);
-    setEmail(demoEmail);
+    }, 400);
   };
 
   return (
@@ -40,146 +34,127 @@ export const LoginPage = () => {
       style={{
         minHeight: '100vh',
         width: '100vw',
-        background: 'radial-gradient(ellipse at top, #1e1b4b 0%, #090d16 60%, #05070c 100%)',
+        background: 'var(--bg-page)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: '2rem 1rem',
-        position: 'relative',
-        overflow: 'hidden',
+        transition: 'var(--theme-transition)',
       }}
     >
-      {/* Background Glowing Orbs */}
       <div
+        className="gov-card"
         style={{
-          position: 'absolute',
-          top: '20%',
-          left: '15%',
-          width: '350px',
-          height: '350px',
-          borderRadius: '50%',
-          background: 'rgba(99, 102, 241, 0.15)',
-          filter: 'blur(100px)',
-          pointerEvents: 'none',
-        }}
-      />
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '20%',
-          right: '15%',
-          width: '350px',
-          height: '350px',
-          borderRadius: '50%',
-          background: 'rgba(6, 182, 212, 0.15)',
-          filter: 'blur(100px)',
-          pointerEvents: 'none',
-        }}
-      />
-
-      <div
-        className="glass-panel"
-        style={{
-          maxWidth: '460px',
+          maxWidth: '440px',
           width: '100%',
-          padding: '2.5rem',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.6)',
-          border: '1px solid rgba(255, 255, 255, 0.12)',
+          padding: '2.25rem',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
         }}
       >
-        {/* Logo & Header */}
-        <div className="flex-center flex-col" style={{ marginBottom: '2rem' }}>
+        {/* Header Branding */}
+        <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
           <div
             style={{
-              width: 56,
-              height: 56,
-              borderRadius: '16px',
-              background: 'linear-gradient(135deg, #6366f1 0%, #06b6d4 100%)',
-              display: 'flex',
+              width: 48,
+              height: 48,
+              borderRadius: 'var(--radius-sm)',
+              background: 'var(--primary)',
+              color: '#ffffff',
+              display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#fff',
-              boxShadow: '0 8px 24px rgba(99, 102, 241, 0.4)',
-              marginBottom: '1rem',
+              marginBottom: '0.75rem',
             }}
           >
-            <Shield size={32} />
+            <Shield size={26} aria-hidden="true" />
           </div>
-          <h1 style={{ fontSize: '1.85rem', fontWeight: 800, textAlign: 'center' }}>
-            RoadSafe<span style={{ color: 'var(--primary)' }}>.AI</span>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em' }}>
+            ROADSAFE INDIA
           </h1>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '0.25rem' }}>
-            National Road Safety & Predictive Intelligence Portal
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+            AI-Powered Road Safety Intelligence Platform
           </p>
         </div>
 
-        {/* Demo Roles Toggle */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label className="form-label" style={{ fontSize: '0.775rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Select Portal Access Role:
-          </label>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginTop: '0.4rem' }}>
-            <button
-              type="button"
-              onClick={() => handleDemoFill('National Safety Chief', 'rajesh.sharma@morth.gov.in')}
-              className={`btn ${role === 'National Safety Chief' ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ fontSize: '0.775rem', padding: '0.45rem' }}
-            >
-              National Analyst
-            </button>
-            <button
-              type="button"
-              onClick={() => handleDemoFill('Highway Patrol Officer', 'patrol.chief@nhai.gov.in')}
-              className={`btn ${role === 'Highway Patrol Officer' ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ fontSize: '0.775rem', padding: '0.45rem' }}
-            >
-              Patrol Officer
-            </button>
-          </div>
+        {/* Security Indicator */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.4rem',
+            background: 'var(--primary-subtle)',
+            border: '1px solid var(--border-color)',
+            padding: '0.45rem 0.75rem',
+            borderRadius: 'var(--radius-sm)',
+            marginBottom: '1.5rem',
+            fontSize: '0.8rem',
+            fontWeight: 700,
+            color: 'var(--primary)',
+          }}
+        >
+          <Lock size={14} aria-hidden="true" />
+          <span>🔒 Secure Access</span>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
           <div>
-            <label className="form-label">Official Email ID</label>
-            <div style={{ position: 'relative' }}>
-              <Mail size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-subtle)' }} />
-              <input
-                type="email"
-                required
-                className="form-input"
-                style={{ paddingLeft: '40px' }}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
+            <label className="gov-label" htmlFor="authority-id">Authority / User ID</label>
+            <input
+              id="authority-id"
+              type="text"
+              required
+              className="gov-input"
+              value={authorityId}
+              onChange={(e) => setAuthorityId(e.target.value)}
+              placeholder="Enter User or Officer ID"
+            />
           </div>
 
           <div>
-            <label className="form-label">Security Password</label>
-            <div style={{ position: 'relative' }}>
-              <Lock size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-subtle)' }} />
-              <input
-                type="password"
-                required
-                className="form-input"
-                style={{ paddingLeft: '40px' }}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
+            <label className="gov-label" htmlFor="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              required
+              className="gov-input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter Password"
+            />
           </div>
 
-          <Button type="submit" variant="primary" size="lg" loading={loading} icon={ArrowRight} iconPosition="right" style={{ marginTop: '0.5rem', width: '100%' }}>
-            Access Executive Portal
+          {/* Remember Me */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <input
+              id="remember-me"
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              style={{ accentColor: 'var(--primary)', width: 16, height: 16 }}
+            />
+            <label htmlFor="remember-me" style={{ fontSize: '0.825rem', color: 'var(--text-muted)', cursor: 'pointer' }}>
+              Remember Me
+            </label>
+          </div>
+
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            loading={loading}
+            icon={UserCheck}
+            style={{ width: '100%', marginTop: '0.5rem' }}
+          >
+            Secure Login
           </Button>
         </form>
 
-        <div style={{ marginTop: '1.75rem', paddingTop: '1.25rem', borderTop: '1px solid var(--bg-card-border)', textAlign: 'center' }}>
-          <div className="flex-center" style={{ gap: '0.4rem', color: 'var(--text-subtle)', fontSize: '0.775rem' }}>
-            <Sparkles size={14} style={{ color: 'var(--secondary)' }} />
-            <span>Ministry of Road Transport & Highways • MoRTH Govt of India</span>
-          </div>
+        <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color-subtle)', textAlign: 'center' }}>
+          <p style={{ fontSize: '0.775rem', color: 'var(--text-subtle)' }}>
+            Authorized access for road safety intelligence
+          </p>
         </div>
       </div>
     </div>
