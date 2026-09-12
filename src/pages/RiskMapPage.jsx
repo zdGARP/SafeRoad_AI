@@ -238,7 +238,7 @@ export const RiskMapPage = () => {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '1.25rem' }}>
+      <div className="risk-map-grid">
         <Card padding={false} style={{ height: '640px', overflow: 'hidden', position: 'relative' }}>
           <MapContainer
             center={[20.5937, 78.9629]}

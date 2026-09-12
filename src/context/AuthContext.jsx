@@ -95,6 +95,11 @@ export const AuthProvider = ({ children }) => {
     return () => clearInterval(interval);
   }, [manualTimeModeOverride]);
 
+  // Sync mobile sidebar drawer state to document root
+  useEffect(() => {
+    document.documentElement.setAttribute('data-mobile-open', mobileSidebarOpen ? 'true' : 'false');
+  }, [mobileSidebarOpen]);
+
   // Apply Accessibility Classes to Document Root
   useEffect(() => {
     document.documentElement.classList.remove('font-scale-normal', 'font-scale-large', 'font-scale-xlarge');
