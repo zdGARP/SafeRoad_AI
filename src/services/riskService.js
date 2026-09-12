@@ -3,9 +3,12 @@ import apiClient from './api';
 
 export const riskService = {
   getLocations: async (filters = {}) => {
-    await apiClient.get('/locations', filters);
-    let result = [...mockLocations];
+    const res = await apiClient.get('/risk-map', filters);
+    if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
+      return res.data;
+    }
 
+    let result = [...mockLocations];
     if (filters.searchQuery) {
       const q = filters.searchQuery.toLowerCase();
       result = result.filter((l) => l.name.toLowerCase().includes(q) || l.city.toLowerCase().includes(q));
@@ -19,18 +22,19 @@ export const riskService = {
     if (filters.roadType && filters.roadType !== 'All') {
       result = result.filter((l) => l.roadType === filters.roadType);
     }
-
     return Promise.resolve(result);
   },
 
   getLocationById: async (id) => {
-    await apiClient.get(`/locations/${id}`);
+    const res = await apiClient.get(`/locations/${id}`);
+    if (res.ok && res.data) return res.data;
     const found = mockLocations.find((l) => l.id === id) || mockLocations[0];
     return Promise.resolve(found);
   },
 
   getHighRiskLocations: async () => {
-    await apiClient.get('/locations/high-risk');
+    const res = await apiClient.get('/risk-map/hotspots');
+    if (res.ok && Array.isArray(res.data)) return res.data;
     return Promise.resolve(mockLocations.filter((l) => l.riskScore >= 70));
   },
 };
