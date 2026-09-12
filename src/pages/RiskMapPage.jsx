@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, CircleMarker, useMap } from 'react-leaflet';
-import { MapPin, Search, Filter, Sparkles, TrendingUp, AlertTriangle, ShieldCheck, ChevronRight, Layers, Eye } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { MapPin, Search, Filter, Sparkles, TrendingUp, AlertTriangle, ShieldCheck, ChevronRight, Layers, Eye, RefreshCw } from 'lucide-react';
 import { PageHeader } from '../components/common/PageHeader';
 import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 
-// Mock High-Risk Location Dataset across India with realistic coordinates
+// Mock High-Risk Location Dataset across India with realistic coordinates & detailed telemetry
 const mockLocations = [
   {
     id: 'LOC-CHENNAI-04',
@@ -17,6 +16,8 @@ const mockLocations = [
     roadCategory: 'National Highway',
     lat: 13.0827,
     lng: 80.2707,
+    xPercent: 72,
+    yPercent: 78,
     riskScore: 87,
     riskLevel: 'critical',
     accidents: 142,
@@ -39,6 +40,8 @@ const mockLocations = [
     roadCategory: 'National Highway',
     lat: 30.3782,
     lng: 76.7767,
+    xPercent: 38,
+    yPercent: 28,
     riskScore: 84,
     riskLevel: 'critical',
     accidents: 118,
@@ -61,6 +64,8 @@ const mockLocations = [
     roadCategory: 'Expressway',
     lat: 18.7557,
     lng: 73.4091,
+    xPercent: 32,
+    yPercent: 62,
     riskScore: 78,
     riskLevel: 'high',
     accidents: 96,
@@ -83,6 +88,8 @@ const mockLocations = [
     roadCategory: 'Urban Arterial',
     lat: 12.9569,
     lng: 77.7011,
+    xPercent: 48,
+    yPercent: 82,
     riskScore: 68,
     riskLevel: 'high',
     accidents: 74,
@@ -105,6 +112,8 @@ const mockLocations = [
     roadCategory: 'National Highway',
     lat: 28.7351,
     lng: 77.1611,
+    xPercent: 41,
+    yPercent: 32,
     riskScore: 54,
     riskLevel: 'medium',
     accidents: 52,
@@ -139,11 +148,11 @@ export const RiskMapPage = () => {
 
   const getMarkerColor = (riskLevel) => {
     switch (riskLevel) {
-      case 'critical': return '#dc2626';
-      case 'high': return '#ea580c';
-      case 'medium': return '#d97706';
-      case 'low': return '#16a34a';
-      default: return '#1d4ed8';
+      case 'critical': return 'var(--risk-critical)';
+      case 'high': return 'var(--risk-high)';
+      case 'medium': return 'var(--risk-medium)';
+      case 'low': return 'var(--risk-low)';
+      default: return 'var(--primary)';
     }
   };
 
@@ -202,68 +211,113 @@ export const RiskMapPage = () => {
         </div>
       </div>
 
-      {/* Main Grid: Leaflet Map (Left) + Location Intelligence Side Panel (Right) */}
+      {/* Main Grid: GIS Risk Map Canvas (Left) + Location Intelligence Side Panel (Right) */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '1.25rem' }}>
-        {/* Leaflet Map Canvas */}
+        {/* GIS Map Container */}
         <Card padding={false} style={{ height: '640px', overflow: 'hidden', position: 'relative' }}>
-          <MapContainer
-            center={[20.5937, 78.9629]}
-            zoom={5}
-            style={{ width: '100%', height: '100%', borderRadius: 'var(--radius-md)' }}
-            scrollWheelZoom={true}
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            {filteredLocations.map((loc) => (
-              <CircleMarker
-                key={loc.id}
-                center={[loc.lat, loc.lng]}
-                radius={loc.riskScore > 80 ? 14 : loc.riskScore > 60 ? 11 : 8}
-                pathOptions={{
-                  fillColor: getMarkerColor(loc.riskLevel),
-                  color: '#ffffff',
-                  weight: 2,
-                  fillOpacity: 0.85,
-                }}
-                eventHandlers={{
-                  click: () => setSelectedLocation(loc),
-                }}
-              >
-                <Popup>
-                  <div style={{ padding: '0.2rem' }}>
-                    <h4 style={{ margin: 0, fontSize: '0.9rem' }}>{loc.name}</h4>
-                    <p style={{ margin: '0.2rem 0', fontSize: '0.8rem', color: '#475569' }}>
-                      Risk Score: <strong>{loc.riskScore} / 100</strong>
-                    </p>
-                    <Badge variant={loc.riskLevel} />
-                  </div>
-                </Popup>
-              </CircleMarker>
-            ))}
-          </MapContainer>
-
-          {/* Map Legend Overlay */}
           <div
             style={{
-              position: 'absolute',
-              bottom: '12px',
-              left: '12px',
-              zIndex: 400,
-              background: 'var(--bg-surface)',
-              border: '1px solid var(--border-color)',
-              padding: '0.6rem 0.85rem',
-              borderRadius: 'var(--radius-sm)',
-              fontSize: '0.75rem',
+              width: '100%',
+              height: '100%',
+              background: 'var(--bg-surface) url("https://tile.openstreetmap.org/5/23/14.png") center/cover no-repeat',
+              position: 'relative',
             }}
           >
-            <div style={{ fontWeight: 700, marginBottom: '0.3rem' }}>Risk Score Classification</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-              <span style={{ color: '#dc2626', fontWeight: 700 }}>● 81–100: CRITICAL</span>
-              <span style={{ color: '#ea580c', fontWeight: 700 }}>● 61–80: HIGH</span>
-              <span style={{ color: '#d97706', fontWeight: 700 }}>● 31–60: MEDIUM</span>
-              <span style={{ color: '#16a34a', fontWeight: 700 }}>● 0–30: LOW</span>
+            {/* Map Overlay Backdrop Grid */}
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'rgba(15, 23, 42, 0.45)',
+                pointerEvents: 'none',
+              }}
+            />
+
+            {/* Simulated Interactive GIS Hotspot Pins */}
+            {filteredLocations.map((loc) => {
+              const isSelected = selectedLocation?.id === loc.id;
+              return (
+                <div
+                  key={loc.id}
+                  onClick={() => setSelectedLocation(loc)}
+                  style={{
+                    position: 'absolute',
+                    top: `${loc.yPercent}%`,
+                    left: `${loc.xPercent}%`,
+                    transform: isSelected ? 'translate(-50%, -50%) scale(1.15)' : 'translate(-50%, -50%)',
+                    cursor: 'pointer',
+                    zIndex: isSelected ? 30 : 10,
+                    transition: 'all 0.2s ease',
+                  }}
+                  title={`${loc.name} - Risk Score: ${loc.riskScore}`}
+                >
+                  <div
+                    style={{
+                      background: getMarkerColor(loc.riskLevel),
+                      color: '#ffffff',
+                      padding: '0.35rem 0.65rem',
+                      borderRadius: 'var(--radius-sm)',
+                      fontWeight: 800,
+                      fontSize: '0.775rem',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      border: isSelected ? '2px solid #ffffff' : '1px solid rgba(255,255,255,0.6)',
+                    }}
+                  >
+                    <MapPin size={14} />
+                    <span>{loc.riskScore} Risk</span>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Map Controls Header */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '12px',
+                left: '12px',
+                zIndex: 20,
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-color)',
+                padding: '0.4rem 0.75rem',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: '0.775rem',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+              }}
+            >
+              <Layers size={14} style={{ color: 'var(--primary)' }} />
+              <span>OpenStreetMap Spatial Risk Layer</span>
+            </div>
+
+            {/* Map Legend Overlay (Prompt 7 Specification) */}
+            <div
+              style={{
+                position: 'absolute',
+                bottom: '12px',
+                left: '12px',
+                zIndex: 20,
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-color)',
+                padding: '0.65rem 0.85rem',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: '0.75rem',
+              }}
+            >
+              <div style={{ fontWeight: 700, marginBottom: '0.3rem', color: 'var(--text-main)' }}>
+                Risk Score Classification
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                <span style={{ color: 'var(--risk-critical)', fontWeight: 700 }}>● 81–100: CRITICAL</span>
+                <span style={{ color: 'var(--risk-high)', fontWeight: 700 }}>● 61–80: HIGH</span>
+                <span style={{ color: 'var(--risk-medium)', fontWeight: 700 }}>● 31–60: MEDIUM</span>
+                <span style={{ color: 'var(--risk-low)', fontWeight: 700 }}>● 0–30: LOW</span>
+              </div>
             </div>
           </div>
         </Card>
