@@ -72,7 +72,14 @@ export const SettingsPage = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <div>
               <label className="gov-label">Theme Mode Setting</label>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+                <Button
+                  variant={themeModeSetting === 'Default' ? 'primary' : 'secondary'}
+                  size="sm"
+                  onClick={() => { setThemeModeSetting('Default'); setManualTimeModeOverride(null); }}
+                >
+                  Default Theme Palette
+                </Button>
                 <Button
                   variant={themeModeSetting === 'Automatic' ? 'primary' : 'secondary'}
                   size="sm"
@@ -87,6 +94,46 @@ export const SettingsPage = () => {
                 >
                   Manual Control
                 </Button>
+              </div>
+
+              {/* Specification Palette Preview Display */}
+              <div style={{ background: 'var(--bg-surface)', padding: '0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color-subtle)' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', display: 'block', marginBottom: '0.5rem' }}>
+                  Default Theme Color Palette Specification
+                </span>
+                
+                {/* Primary Colors */}
+                <div style={{ marginBottom: '0.75rem' }}>
+                  <span style={{ fontSize: '0.725rem', color: 'var(--text-subtle)', display: 'block', marginBottom: '0.25rem', fontWeight: 600 }}>
+                    Primary colors
+                  </span>
+                  <div style={{ display: 'flex', borderRadius: 'var(--radius-sm)', overflow: 'hidden', height: '34px', boxShadow: 'var(--shadow-sm)' }}>
+                    <div style={{ width: '45%', background: '#F5A623', color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', display: 'flex', alignItems: 'center', paddingLeft: '0.75rem', fontFamily: 'monospace' }}>
+                      F5A623
+                    </div>
+                    <div style={{ width: '55%', background: '#248AFD', color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', display: 'flex', alignItems: 'center', paddingLeft: '0.75rem', fontFamily: 'monospace' }}>
+                      248AFD
+                    </div>
+                  </div>
+                </div>
+
+                {/* Supporting Colors */}
+                <div>
+                  <span style={{ fontSize: '0.725rem', color: 'var(--text-subtle)', display: 'block', marginBottom: '0.25rem', fontWeight: 600 }}>
+                    Supporting colors
+                  </span>
+                  <div style={{ display: 'flex', borderRadius: 'var(--radius-sm)', overflow: 'hidden', height: '34px', boxShadow: 'var(--shadow-sm)' }}>
+                    <div style={{ flex: 1, background: '#FF4747', color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', display: 'flex', alignItems: 'center', paddingLeft: '0.5rem', fontFamily: 'monospace' }}>
+                      FF4747
+                    </div>
+                    <div style={{ flex: 1.2, background: '#71C02B', color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', display: 'flex', alignItems: 'center', paddingLeft: '0.5rem', fontFamily: 'monospace' }}>
+                      71C02B
+                    </div>
+                    <div style={{ flex: 1, background: '#FFC100', color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', display: 'flex', alignItems: 'center', paddingLeft: '0.5rem', fontFamily: 'monospace' }}>
+                      FFC100
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 

@@ -9,23 +9,43 @@
 
 :root {
   /* ------------------------------------------------------------------------
-     IMMUTABLE SEMANTIC RISK COLORS (Never change with time theme)
+     DEFAULT BRAND & SUPPORTING COLOR SYSTEM (User Specified Palette)
+     Primary Colors: #F5A623 (Golden Orange), #248AFD (Vibrant Blue)
+     Supporting Colors: #FF4747 (Red), #71C02B (Green), #FFC100 (Amber)
      ------------------------------------------------------------------------ */
-  --risk-low: #15803d;
-  --risk-low-bg: #f0fdf4;
-  --risk-low-border: #bbf7d0;
+  --color-primary-orange: #F5A623;
+  --color-primary-blue: #248AFD;
 
-  --risk-medium: #b45309;
-  --risk-medium-bg: #fffbeb;
-  --risk-medium-border: #fde68a;
+  --color-support-red: #FF4747;
+  --color-support-green: #71C02B;
+  --color-support-yellow: #FFC100;
 
-  --risk-high: #c2410c;
-  --risk-high-bg: #fff7ed;
-  --risk-high-border: #ffedd5;
+  /* Immutable Semantic Risk Colors (From Specification Palette) */
+  --risk-low: #71C02B;
+  --risk-low-bg: #f3faf0;
+  --risk-low-border: #c5ea9f;
 
-  --risk-critical: #b91c1c;
-  --risk-critical-bg: #fef2f2;
-  --risk-critical-border: #fecaca;
+  --risk-medium: #FFC100;
+  --risk-medium-bg: #fffdf0;
+  --risk-medium-border: #ffe899;
+
+  --risk-high: #F5A623;
+  --risk-high-bg: #fff8eb;
+  --risk-high-border: #fcd9a3;
+
+  --risk-critical: #FF4747;
+  --risk-critical-bg: #fff0f0;
+  --risk-critical-border: #ffb8b8;
+
+  /* Primary Brand Defaults */
+  --primary: #248AFD;
+  --primary-hover: #1e78e3;
+  --primary-subtle: #e9f3fe;
+  --primary-border: #9ec9fe;
+
+  --accent: #F5A623;
+  --accent-hover: #e09419;
+  --accent-subtle: #fef6e9;
 
   /* UI Shapes & Layout Spacing */
   --sidebar-width: 250px;
@@ -44,7 +64,7 @@
    TIME-BASED THEME MODES
    -------------------------------------------------------------------------- */
 
-/* 1. MORNING MODE (05:00 - 11:59): Bright soft background, fresh teal/blue accents */
+/* 1. MORNING MODE (05:00 - 11:59): Bright soft background with primary blue & orange accents */
 [data-time-mode='morning'] {
   --bg-page: #f1f5f9;
   --bg-surface: #ffffff;
@@ -54,10 +74,10 @@
   --border-color: #cbd5e1;
   --border-color-subtle: #e2e8f0;
 
-  --primary: #0f766e;
-  --primary-hover: #0d9488;
-  --primary-subtle: #ccfbf1;
-  --accent: #0284c7;
+  --primary: #248AFD;
+  --primary-hover: #1e78e3;
+  --primary-subtle: #e9f3fe;
+  --accent: #F5A623;
 
   --text-main: #0f172a;
   --text-muted: #334155;
@@ -65,7 +85,7 @@
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-/* 2. AFTERNOON MODE (12:00 - 16:59): Crisp white/light-gray, professional blue accent */
+/* 2. AFTERNOON MODE (12:00 - 16:59): Crisp light-gray background with primary blue & orange accents */
 [data-time-mode='afternoon'] {
   --bg-page: #f8fafc;
   --bg-surface: #ffffff;
@@ -75,10 +95,10 @@
   --border-color: #cbd5e1;
   --border-color-subtle: #e2e8f0;
 
-  --primary: #1d4ed8;
-  --primary-hover: #2563eb;
-  --primary-subtle: #dbeafe;
-  --accent: #0369a1;
+  --primary: #248AFD;
+  --primary-hover: #1e78e3;
+  --primary-subtle: #e9f3fe;
+  --accent: #F5A623;
 
   --text-main: #0f172a;
   --text-muted: #334155;
@@ -86,7 +106,7 @@
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
-/* 3. EVENING MODE (17:00 - 20:59): Warmer neutral surfaces, deep navy accents */
+/* 3. EVENING MODE (17:00 - 20:59): Warmer neutral surfaces with primary blue & orange accents */
 [data-time-mode='evening'] {
   --bg-page: #e2e8f0;
   --bg-surface: #f1f5f9;
@@ -96,10 +116,10 @@
   --border-color: #94a3b8;
   --border-color-subtle: #cbd5e1;
 
-  --primary: #1e3a8a;
-  --primary-hover: #1e40af;
-  --primary-subtle: #e0e7ff;
-  --accent: #0369a1;
+  --primary: #248AFD;
+  --primary-hover: #1e78e3;
+  --primary-subtle: #e9f3fe;
+  --accent: #F5A623;
 
   --text-main: #0f172a;
   --text-muted: #1e293b;
@@ -107,7 +127,7 @@
   --shadow-card: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
-/* 4. NIGHT MODE (21:00 - 04:59): Dark charcoal/navy, muted blue accents (NO pure black) */
+/* 4. NIGHT MODE (21:00 - 04:59): Dark charcoal/navy with primary blue & orange accents */
 [data-time-mode='night'] {
   --bg-page: #0f172a;
   --bg-surface: #1e293b;
@@ -117,25 +137,24 @@
   --border-color: #334155;
   --border-color-subtle: #475569;
 
-  --primary: #3b82f6;
-  --primary-hover: #60a5fa;
-  --primary-subtle: rgba(59, 130, 246, 0.15);
-  --accent: #38bdf8;
+  --primary: #248AFD;
+  --primary-hover: #52a4ff;
+  --primary-subtle: rgba(36, 138, 253, 0.18);
+  --accent: #F5A623;
 
   --text-main: #f8fafc;
   --text-muted: #cbd5e1;
   --text-subtle: #94a3b8;
   --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.25);
 
-  /* Adjust risk background tint for dark mode readability */
-  --risk-low-bg: rgba(22, 163, 74, 0.15);
-  --risk-medium-bg: rgba(217, 119, 6, 0.15);
-  --risk-high-bg: rgba(234, 88, 12, 0.15);
-  --risk-critical-bg: rgba(220, 38, 38, 0.15);
-  --risk-low: #4ade80;
-  --risk-medium: #fbbf24;
-  --risk-high: #fb923c;
-  --risk-critical: #f87171;
+  --risk-low-bg: rgba(113, 192, 43, 0.18);
+  --risk-medium-bg: rgba(255, 193, 0, 0.18);
+  --risk-high-bg: rgba(245, 166, 35, 0.18);
+  --risk-critical-bg: rgba(255, 71, 71, 0.18);
+  --risk-low: #71C02B;
+  --risk-medium: #FFC100;
+  --risk-high: #F5A623;
+  --risk-critical: #FF4747;
 }
 
 /* --------------------------------------------------------------------------
