@@ -17,7 +17,7 @@ export const SettingsPage = () => {
     setReducedMotion,
   } = useAuth();
 
-  const [themeModeSetting, setThemeModeSetting] = useState('Automatic'); // Automatic | Manual
+  const [themeModeSetting, setThemeModeSetting] = useState('Default'); // Default | Automatic | Manual
   const [notificationsOn, setNotificationsOn] = useState(true);
   const [dataRefreshMode, setDataRefreshMode] = useState('Automatic'); // Automatic | Manual
   const [saved, setSaved] = useState(false);
@@ -72,17 +72,33 @@ export const SettingsPage = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <div>
               <label className="gov-label">Theme Mode Setting</label>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <Button
+                  variant={themeModeSetting === 'Default' ? 'primary' : 'secondary'}
+                  size="sm"
+                  style={{ flex: '1 1 auto' }}
+                  onClick={() => {
+                    setThemeModeSetting('Default');
+                    setManualTimeModeOverride('afternoon');
+                  }}
+                >
+                  Default Theme Palette
+                </Button>
                 <Button
                   variant={themeModeSetting === 'Automatic' ? 'primary' : 'secondary'}
                   size="sm"
-                  onClick={() => { setThemeModeSetting('Automatic'); setManualTimeModeOverride(null); }}
+                  style={{ flex: '1 1 auto' }}
+                  onClick={() => {
+                    setThemeModeSetting('Automatic');
+                    setManualTimeModeOverride(null);
+                  }}
                 >
                   Automatic (System Time-Based)
                 </Button>
                 <Button
                   variant={themeModeSetting === 'Manual' ? 'primary' : 'secondary'}
                   size="sm"
+                  style={{ flex: '1 1 auto' }}
                   onClick={() => setThemeModeSetting('Manual')}
                 >
                   Manual Control
@@ -92,10 +108,11 @@ export const SettingsPage = () => {
 
             <div>
               <label className="gov-label">Active Time Mode Override</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <Button
                   variant={timeMode === 'morning' ? 'primary' : 'secondary'}
                   size="sm"
+                  style={{ flex: '1 1 140px' }}
                   onClick={() => { setManualTimeModeOverride('morning'); setThemeModeSetting('Manual'); }}
                 >
                   Morning (05:00-11:59)
@@ -103,6 +120,7 @@ export const SettingsPage = () => {
                 <Button
                   variant={timeMode === 'afternoon' ? 'primary' : 'secondary'}
                   size="sm"
+                  style={{ flex: '1 1 140px' }}
                   onClick={() => { setManualTimeModeOverride('afternoon'); setThemeModeSetting('Manual'); }}
                 >
                   Afternoon (12:00-16:59)
@@ -110,6 +128,7 @@ export const SettingsPage = () => {
                 <Button
                   variant={timeMode === 'evening' ? 'primary' : 'secondary'}
                   size="sm"
+                  style={{ flex: '1 1 140px' }}
                   onClick={() => { setManualTimeModeOverride('evening'); setThemeModeSetting('Manual'); }}
                 >
                   Evening (17:00-20:59)
@@ -117,6 +136,7 @@ export const SettingsPage = () => {
                 <Button
                   variant={timeMode === 'night' ? 'primary' : 'secondary'}
                   size="sm"
+                  style={{ flex: '1 1 140px' }}
                   onClick={() => { setManualTimeModeOverride('night'); setThemeModeSetting('Manual'); }}
                 >
                   Night (21:00-04:59)
