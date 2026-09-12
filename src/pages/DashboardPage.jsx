@@ -1,16 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   AlertTriangle,
-  ShieldCheck,
+  Activity,
+  Users,
   MapPin,
-  Flame,
   ArrowUpRight,
   Download,
-  Users,
-  Activity,
   Sparkles,
-  Info,
-  Clock,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -20,8 +16,6 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
-  BarChart,
-  Bar,
 } from 'recharts';
 import { PageHeader } from '../components/common/PageHeader';
 import { StatCard } from '../components/common/StatCard';
@@ -30,6 +24,9 @@ import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 import { FilterBar } from '../components/filters/FilterBar';
 import { ChartContainer } from '../components/charts/ChartContainer';
+import { AIInsightCard } from '../components/common/AIInsightCard';
+import { riskService } from '../services/riskService';
+import { analyticsService } from '../services/analyticsService';
 
 const monthlyAccidentData = [
   { month: 'Jan', accidents: 3410, fatalities: 890, injuries: 2520 },
@@ -42,55 +39,21 @@ const monthlyAccidentData = [
   { month: 'Aug', accidents: 2821, fatalities: 712, injuries: 2109 },
 ];
 
-const highRiskCorridors = [
-  {
-    id: 'LOC-01',
-    location: 'Chennai NH Junction 04',
-    state: 'Tamil Nadu',
-    riskScore: 87,
-    riskLevel: 'critical',
-    accidents: 142,
-    fatalities: 38,
-    primaryCause: 'Overspeeding & Heavy Merge',
-    action: 'Speed Governor Audit & Signal Redesign',
-  },
-  {
-    id: 'LOC-02',
-    location: 'NH-44 KM 142 (Ambala Section)',
-    state: 'Haryana',
-    riskScore: 84,
-    riskLevel: 'critical',
-    accidents: 118,
-    fatalities: 31,
-    primaryCause: 'Winter Fog & Freight Speeding',
-    action: 'Solar Delineator Installation',
-  },
-  {
-    id: 'LOC-03',
-    location: 'Mumbai-Pune Expressway KM 38',
-    state: 'Maharashtra',
-    riskScore: 78,
-    riskLevel: 'high',
-    accidents: 96,
-    fatalities: 24,
-    primaryCause: 'Sharp Curve & Brake Fade',
-    action: 'High-Friction Surfacing',
-  },
-  {
-    id: 'LOC-04',
-    location: 'Outer Ring Road (Marathahalli)',
-    state: 'Karnataka',
-    riskScore: 68,
-    riskLevel: 'high',
-    accidents: 74,
-    fatalities: 12,
-    primaryCause: 'Pedestrian Uncontrolled Merge',
-    action: 'Grade-Separated Overpass',
-  },
-];
-
 export const DashboardPage = () => {
-  const [filters, setFilters] = useState({ stateUt: 'All', timeRange: '30d' });
+  const [locations, setLocations] = useState([]);
+  const [summary, setSummary] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      riskService.getLocations(),
+      analyticsService.getAccidentSummary(),
+    ]).then(([locs, sum]) => {
+      setLocations(locs);
+      setSummary(sum);
+      setLoading(false);
+    });
+  }, []);
 
   return (
     <div>
@@ -107,48 +70,48 @@ export const DashboardPage = () => {
         }
       />
 
-      {/* Global Filter Toolbar */}
-      <FilterBar onFilterChange={(newFilters) => setFilters(newFilters)} />
+      <FilterBar />
 
       {/* Prompt 6 Specification: 4 Main KPI Cards */}
-      <div className="grid-4" style={{ marginBottom: '1.5rem' }}>
-        <StatCard
-          title="Total Accidents"
-          value="24,581"
-          changePercent="↓ 4.2%"
-          trendDirection="down"
-          comparisonPeriod="Compared with previous period"
-          icon={AlertTriangle}
-        />
-        <StatCard
-          title="Fatalities"
-          value="6,412"
-          changePercent="↓ 5.8%"
-          trendDirection="down"
-          comparisonPeriod="Compared with previous period"
-          icon={Activity}
-        />
-        <StatCard
-          title="Injuries"
-          value="18,169"
-          changePercent="↓ 3.1%"
-          trendDirection="down"
-          comparisonPeriod="Compared with previous period"
-          icon={Users}
-        />
-        <StatCard
-          title="High-Risk Locations"
-          value="142"
-          changePercent="↓ 8.5%"
-          trendDirection="down"
-          comparisonPeriod="Compared with previous period"
-          icon={MapPin}
-        />
-      </div>
+      {summary && (
+        <div className="grid-4" style={{ marginBottom: '1.5rem' }}>
+          <StatCard
+            title="Total Accidents"
+            value={summary.totalAccidents.toLocaleString()}
+            changePercent={summary.accidentsChange}
+            trendDirection="down"
+            comparisonPeriod={summary.comparisonPeriod}
+            icon={AlertTriangle}
+          />
+          <StatCard
+            title="Fatalities"
+            value={summary.fatalities.toLocaleString()}
+            changePercent={summary.fatalitiesChange}
+            trendDirection="down"
+            comparisonPeriod={summary.comparisonPeriod}
+            icon={Activity}
+          />
+          <StatCard
+            title="Injuries"
+            value={summary.injuries.toLocaleString()}
+            changePercent={summary.injuriesChange}
+            trendDirection="down"
+            comparisonPeriod={summary.comparisonPeriod}
+            icon={Users}
+          />
+          <StatCard
+            title="High-Risk Locations"
+            value={summary.highRiskLocations}
+            changePercent={summary.locationsChange}
+            trendDirection="down"
+            comparisonPeriod={summary.comparisonPeriod}
+            icon={MapPin}
+          />
+        </div>
+      )}
 
-      {/* Immediate Diagnostic Coverage (WHERE, WHY, WHO, WHEN, WHAT, IMPACT) */}
+      {/* Diagnostic Coverage (WHERE, WHY, WHO, WHEN, WHAT, IMPACT) */}
       <div className="grid-3" style={{ marginBottom: '1.5rem' }}>
-        {/* Main Incident & Fatality Trend Line Chart (2 Cols) */}
         <div style={{ gridColumn: 'span 2' }}>
           <ChartContainer
             title="Accident & Fatality Trend Overview"
@@ -174,32 +137,12 @@ export const DashboardPage = () => {
           </ChartContainer>
         </div>
 
-        {/* AI Insight Card (Prompt 6 & Prompt 8 Requirement) */}
         <div>
           <Card title="AI Diagnostic Synthesis">
-            <div
-              style={{
-                background: 'var(--primary-subtle)',
-                border: '1px solid var(--border-color)',
-                padding: '0.75rem 1rem',
-                borderRadius: 'var(--radius-sm)',
-                marginBottom: '1rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-              }}
-            >
-              <Sparkles size={16} style={{ color: 'var(--primary)' }} />
-              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary)' }}>
-                AI-Generated Insight
-              </span>
-            </div>
-
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: '1.5', marginBottom: '1rem' }}>
-              <strong>Primary Risk Driver:</strong> Overspeeding on non-segregated urban merges accounts for <strong>44.8%</strong> of critical incidents recorded this period.
-            </p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.8rem' }}>
+            <AIInsightCard
+              insight="Overspeeding on non-segregated urban merges accounts for 38% of critical incidents recorded this period."
+            />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.8rem', marginTop: '1rem' }}>
               <div className="flex-between" style={{ borderBottom: '1px solid var(--border-color-subtle)', paddingBottom: '0.4rem' }}>
                 <span style={{ color: 'var(--text-subtle)' }}>WHERE:</span>
                 <span style={{ fontWeight: 600 }}>National Highways (48.2%)</span>
@@ -210,7 +153,7 @@ export const DashboardPage = () => {
               </div>
               <div className="flex-between" style={{ borderBottom: '1px solid var(--border-color-subtle)', paddingBottom: '0.4rem' }}>
                 <span style={{ color: 'var(--text-subtle)' }}>WHO:</span>
-                <span style={{ fontWeight: 600 }}>Two-Wheelers (44%)</span>
+                <span style={{ fontWeight: 600 }}>Two-Wheelers (48%)</span>
               </div>
               <div className="flex-between">
                 <span style={{ color: 'var(--text-subtle)' }}>IMPACT:</span>
@@ -221,7 +164,7 @@ export const DashboardPage = () => {
         </div>
       </div>
 
-      {/* Top High-Risk Locations Table */}
+      {/* High Risk Corridors Table */}
       <Card title="Top Priority High-Risk Locations">
         <div className="table-responsive">
           <table className="gov-table">
@@ -233,13 +176,13 @@ export const DashboardPage = () => {
                 <th>Risk Classification</th>
                 <th>Accidents / Fatalities</th>
                 <th>Primary Contributing Factor</th>
-                <th>Recommended Action</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
-              {highRiskCorridors.map((row) => (
+              {locations.map((row) => (
                 <tr key={row.id}>
-                  <td style={{ fontWeight: 700 }}>{row.location}</td>
+                  <td style={{ fontWeight: 700 }}>{row.name}</td>
                   <td style={{ color: 'var(--text-muted)' }}>{row.state}</td>
                   <td style={{ fontWeight: 800 }}>{row.riskScore} / 100</td>
                   <td>
@@ -248,7 +191,7 @@ export const DashboardPage = () => {
                   <td>
                     <strong>{row.accidents}</strong> accidents • <span style={{ color: 'var(--risk-critical)', fontWeight: 700 }}>{row.fatalities} fatalities</span>
                   </td>
-                  <td style={{ color: 'var(--text-muted)' }}>{row.primaryCause}</td>
+                  <td style={{ color: 'var(--text-muted)' }}>{row.causes[0]?.cause}</td>
                   <td>
                     <Button variant="outline" size="sm" icon={ArrowUpRight}>
                       Inspect Location

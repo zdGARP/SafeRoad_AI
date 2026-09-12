@@ -1,158 +1,205 @@
-import React, { useState } from 'react';
-import { Sliders, Play, RotateCcw, TrendingDown, Sparkles } from 'lucide-react';
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-} from 'recharts';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import { Sliders, Play, RotateCcw, AlertTriangle, ShieldCheck, CheckSquare, Square, Award, Sparkles } from 'lucide-react';
 import { PageHeader } from '../components/common/PageHeader';
 import { Card } from '../components/common/Card';
+import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
+import { interventionService } from '../services/interventionService';
+import { mockInterventionsList } from '../data/interventionData';
 
 export const ImpactSimulationPage = () => {
-  const [speedLimitReduce, setSpeedLimitReduce] = useState(10); // km/h reduction
-  const [cameraDensity, setCameraDensity] = useState(60); // % coverage
-  const [rumbleStrips, setRumbleStrips] = useState(80); // % coverage
-  const [lighting, setLighting] = useState(70); // % illumination
+  const routerLocation = useLocation();
+  const initialId = routerLocation.state?.initialInterventionId || 'INT-SPEED-01';
 
-  // Simulated Calculation
-  const simulatedFatalityReduction = Math.min(
-    65,
-    Math.round(speedLimitReduce * 2.2 + cameraDensity * 0.25 + rumbleStrips * 0.15 + lighting * 0.12)
-  );
+  const [selectedIds, setSelectedIds] = useState([initialId, 'INT-LIGHT-02']);
+  const [baseAccidents, setBaseAccidents] = useState(142);
+  const [simulationResult, setSimulationResult] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const simulationData = [
-    { metric: 'Baseline Incidents', current: 100, simulated: 100 - simulatedFatalityReduction * 0.8 },
-    { metric: 'Fatalities Index', current: 100, simulated: 100 - simulatedFatalityReduction },
-    { metric: 'High-Speed Crashes', current: 100, simulated: 100 - simulatedFatalityReduction * 1.15 },
-  ];
+  const toggleIntervention = (id) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter((item) => item !== id));
+    } else {
+      setSelectedIds([...selectedIds, id]);
+    }
+  };
+
+  const runSimulation = () => {
+    setLoading(true);
+    interventionService.simulateImpact(selectedIds, baseAccidents).then((result) => {
+      setSimulationResult(result);
+      setLoading(false);
+    });
+  };
+
+  useEffect(() => {
+    runSimulation();
+  }, []);
 
   return (
     <div>
       <PageHeader
-        title="What-If Impact Simulation Sandbox"
-        subtitle="Simulate policy, speed enforcement, and infrastructure investments to estimate projected crash reduction."
-        badgeText="AI Simulation Core"
+        title="Intervention Impact Simulation Sandbox"
+        subtitle="Interactive policy sandbox allowing authorities to evaluate multi-intervention combinations prior to resource allocation."
+        badgeText="Simulation Sandbox"
+        badgeVariant="primary"
         breadcrumbs={['Home', 'Impact Simulation']}
       />
 
-      <div className="grid-2" style={{ marginBottom: '1.75rem' }}>
-        {/* Controls Sandbox */}
-        <Card title="Simulation Variables & Policy Controls">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div>
-              <div className="flex-between" style={{ marginBottom: '0.4rem' }}>
-                <label className="form-label" style={{ margin: 0 }}>Speed Limit Reduction (km/h)</label>
-                <span style={{ fontWeight: 700, color: 'var(--primary)' }}>-{speedLimitReduce} km/h</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="30"
-                step="5"
-                value={speedLimitReduce}
-                onChange={(e) => setSpeedLimitReduce(Number(e.target.value))}
-                style={{ width: '100%', accentColor: 'var(--primary)' }}
-              />
-            </div>
+      {/* Prompt 14 Specification: Explicit Prototype Simulation Disclaimer */}
+      <div
+        style={{
+          background: 'var(--risk-medium-bg)',
+          border: '1px solid var(--risk-medium-border)',
+          padding: '0.85rem 1rem',
+          borderRadius: 'var(--radius-sm)',
+          marginBottom: '1.5rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+        }}
+      >
+        <Badge variant="medium">Prototype Simulation</Badge>
+        <span style={{ fontSize: '0.825rem', color: 'var(--text-main)', lineHeight: '1.4' }}>
+          Disclaimer: This simulation tool provides multi-countermeasure compounding estimates for scenario comparison. Do not claim that the estimated intervention effect is scientifically validated.
+        </span>
+      </div>
 
-            <div>
-              <div className="flex-between" style={{ marginBottom: '0.4rem' }}>
-                <label className="form-label" style={{ margin: 0 }}>Speed Camera Density (% Corridor)</label>
-                <span style={{ fontWeight: 700, color: 'var(--secondary)' }}>{cameraDensity}%</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                step="10"
-                value={cameraDensity}
-                onChange={(e) => setCameraDensity(Number(e.target.value))}
-                style={{ width: '100%', accentColor: 'var(--secondary)' }}
-              />
-            </div>
+      <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
+        {/* Intervention Selection Checkboxes (Prompt 14 Specification) */}
+        <Card title="Select Countermeasures for Combination Analysis">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem' }}>
+            {mockInterventionsList.map((item) => {
+              const isChecked = selectedIds.includes(item.id);
+              return (
+                <div
+                  key={item.id}
+                  onClick={() => toggleIntervention(item.id)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '0.75rem',
+                    padding: '0.75rem',
+                    borderRadius: 'var(--radius-sm)',
+                    background: isChecked ? 'var(--primary-subtle)' : 'var(--bg-surface)',
+                    border: isChecked ? '1px solid var(--primary)' : '1px solid var(--border-color-subtle)',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <div style={{ marginTop: '2px', color: isChecked ? 'var(--primary)' : 'var(--text-subtle)' }}>
+                    {isChecked ? <CheckSquare size={18} /> : <Square size={18} />}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div className="flex-between">
+                      <strong style={{ fontSize: '0.9rem', color: 'var(--text-main)' }}>{item.name}</strong>
+                      <span style={{ fontSize: '0.775rem', fontWeight: 700, color: 'var(--risk-low)' }}>
+                        -{item.expectedReduction}%
+                      </span>
+                    </div>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                      {item.reason}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
 
-            <div>
-              <div className="flex-between" style={{ marginBottom: '0.4rem' }}>
-                <label className="form-label" style={{ margin: 0 }}>Rumble Strip & Friction Surfacing</label>
-                <span style={{ fontWeight: 700, color: '#f59e0b' }}>{rumbleStrips}%</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                step="10"
-                value={rumbleStrips}
-                onChange={(e) => setRumbleStrips(Number(e.target.value))}
-                style={{ width: '100%', accentColor: '#f59e0b' }}
-              />
-            </div>
-
-            <div>
-              <div className="flex-between" style={{ marginBottom: '0.4rem' }}>
-                <label className="form-label" style={{ margin: 0 }}>Night Illumination & Solar Delineators</label>
-                <span style={{ fontWeight: 700, color: '#10b981' }}>{lighting}%</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                step="10"
-                value={lighting}
-                onChange={(e) => setLighting(Number(e.target.value))}
-                style={{ width: '100%', accentColor: '#10b981' }}
-              />
-            </div>
-
-            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
-              <Button variant="primary" icon={Play} style={{ flex: 1 }}>
-                Execute Simulation
-              </Button>
-              <Button
-                variant="secondary"
-                icon={RotateCcw}
-                onClick={() => {
-                  setSpeedLimitReduce(10);
-                  setCameraDensity(60);
-                  setRumbleStrips(80);
-                  setLighting(70);
-                }}
-              >
-                Reset
-              </Button>
-            </div>
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <Button
+              variant="primary"
+              icon={Play}
+              loading={loading}
+              onClick={runSimulation}
+              style={{ flex: 1 }}
+            >
+              RUN SIMULATION
+            </Button>
+            <Button variant="secondary" icon={RotateCcw} onClick={() => setSelectedIds([])}>
+              Clear
+            </Button>
           </div>
         </Card>
 
-        {/* Real-time Output Impact Prediction */}
-        <Card title="Projected Safety Impact Result" glow>
-          <div className="flex-center flex-col" style={{ padding: '1.5rem 0', textAlign: 'center' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Projected Fatality Reduction Rate</span>
-            <div style={{ fontSize: '3.5rem', fontWeight: 800, color: '#10b981', fontFamily: 'Outfit', lineHeight: 1.1, margin: '0.5rem 0' }}>
-              -{simulatedFatalityReduction.toFixed(1)}%
-            </div>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-main)', maxWidth: '380px' }}>
-              Applying these policy and infrastructure parameters is estimated to save approximately{' '}
-              <strong style={{ color: 'var(--primary)' }}>{(simulatedFatalityReduction * 18.5).toFixed(0)} lives per year</strong> across selected corridors.
-            </p>
-          </div>
+        {/* Simulation Output & Ranked Priority (Prompt 14 Specification) */}
+        <Card title="Simulation Results & Priority Ranking">
+          {simulationResult ? (
+            <div>
+              <div className="grid-3" style={{ marginBottom: '1.25rem', gap: '0.5rem' }}>
+                <div style={{ background: 'var(--bg-surface)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color-subtle)' }}>
+                  <span style={{ fontSize: '0.725rem', color: 'var(--text-subtle)' }}>Current Accidents</span>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800 }}>{simulationResult.baseAccidentCount}</div>
+                </div>
 
-          <div style={{ height: '220px', width: '100%', marginTop: '1rem' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={simulationData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                <XAxis dataKey="metric" stroke="var(--text-subtle)" fontSize={11} />
-                <YAxis stroke="var(--text-subtle)" fontSize={11} domain={[0, 110]} />
-                <Tooltip contentStyle={{ background: '#0f172a', borderColor: 'var(--bg-card-border)', borderRadius: '8px' }} />
-                <Bar dataKey="current" name="Baseline Risk Index (100)" fill="#ef4444" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="simulated" name="Simulated Post-Intervention Risk Index" fill="#10b981" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+                <div style={{ background: 'var(--bg-surface)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color-subtle)' }}>
+                  <span style={{ fontSize: '0.725rem', color: 'var(--text-subtle)' }}>Predicted Accidents</span>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--primary)' }}>
+                    {simulationResult.predictedAccidentCount}
+                  </div>
+                </div>
+
+                <div style={{ background: 'var(--bg-surface)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color-subtle)' }}>
+                  <span style={{ fontSize: '0.725rem', color: 'var(--text-subtle)' }}>Estimated Reduction</span>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--risk-low)' }}>
+                    {simulationResult.totalReductionPercent}%
+                  </div>
+                </div>
+              </div>
+
+              {/* Recommended Priority Rankings */}
+              <h4 style={{ fontSize: '0.95rem', fontWeight: 800, marginBottom: '0.75rem' }}>
+                Recommended Priority Ranking
+              </h4>
+
+              {simulationResult.rankedInterventions.length === 0 ? (
+                <p style={{ fontSize: '0.825rem', color: 'var(--text-subtle)' }}>Select at least one intervention on the left and click RUN SIMULATION.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {simulationResult.rankedInterventions.map((item, idx) => (
+                    <div
+                      key={item.id}
+                      style={{
+                        padding: '0.65rem 0.85rem',
+                        borderRadius: 'var(--radius-sm)',
+                        background: 'var(--bg-surface)',
+                        border: '1px solid var(--border-color-subtle)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                        <span
+                          style={{
+                            width: 22,
+                            height: 22,
+                            borderRadius: '50%',
+                            background: 'var(--primary)',
+                            color: '#fff',
+                            fontWeight: 800,
+                            fontSize: '0.75rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          {idx + 1}
+                        </span>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>{item.name}</span>
+                      </div>
+                      <Badge variant={item.priority === 'Very High' ? 'critical' : 'high'}>
+                        {item.priority} Priority
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-subtle)' }}>Click RUN SIMULATION to compute policy combination impact.</p>
+          )}
         </Card>
       </div>
     </div>

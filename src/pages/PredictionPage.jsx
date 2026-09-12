@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrainCircuit, Sparkles, AlertOctagon, TrendingUp, Cpu } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { BrainCircuit, Sparkles, TrendingUp, Calendar, MapPin, Cpu, ShieldCheck } from 'lucide-react';
 import {
   ResponsiveContainer,
   LineChart,
@@ -12,86 +12,151 @@ import {
 import { PageHeader } from '../components/common/PageHeader';
 import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
-import { ChartContainer } from '../components/charts/ChartContainer';
-
-const predictionForecastData = [
-  { day: 'Day 1 (Mon)', actual: 120, predicted: 124, riskLevel: 'Moderate' },
-  { day: 'Day 2 (Tue)', actual: 115, predicted: 118, riskLevel: 'Moderate' },
-  { day: 'Day 3 (Wed)', actual: 108, predicted: 110, riskLevel: 'Low' },
-  { day: 'Day 4 (Thu)', actual: 130, predicted: 135, riskLevel: 'High' },
-  { day: 'Day 5 (Fri)', actual: 165, predicted: 170, riskLevel: 'Critical (Weekend Peak)' },
-  { day: 'Day 6 (Sat)', actual: 180, predicted: 185, riskLevel: 'Critical' },
-  { day: 'Day 7 (Sun)', actual: 172, predicted: 178, riskLevel: 'Critical' },
-];
+import { Button } from '../components/common/Button';
+import { RiskScoreCard } from '../components/common/RiskScoreCard';
+import { AIInsightCard } from '../components/common/AIInsightCard';
+import { predictionService } from '../services/predictionService';
+import { riskService } from '../services/riskService';
 
 export const PredictionPage = () => {
+  const [locations, setLocations] = useState([]);
+  const [selectedLocId, setSelectedLocId] = useState('LOC-CHENNAI-04');
+  const [period, setPeriod] = useState('7d');
+  const [prediction, setPrediction] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    riskService.getLocations().then((locs) => setLocations(locs));
+  }, []);
+
+  useEffect(() => {
+    setLoading(true);
+    predictionService.getPrediction(selectedLocId, period).then((data) => {
+      setPrediction(data);
+      setLoading(false);
+    });
+  }, [selectedLocId, period]);
+
   return (
     <div>
       <PageHeader
-        title="AI Risk Prediction Engine"
-        subtitle="Machine learning forecasting models predicting accident probability up to 30 days in advance."
-        badgeText="Neural Predictive Model v4.2"
+        title="AI Future Accident Risk Prediction"
+        subtitle="Machine learning forecasting models predicting accident probability up to 90 days in advance."
+        badgeText="Model Prediction"
         badgeVariant="primary"
         breadcrumbs={['Home', 'Risk Prediction']}
       />
 
-      <div className="grid-3" style={{ marginBottom: '1.75rem' }}>
-        <Card glow>
-          <div className="flex-between">
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>AI Forecast Accuracy</span>
-            <Sparkles size={20} style={{ color: 'var(--secondary)' }} />
+      {/* Filter Bar for Prompt 12 */}
+      <div className="gov-card" style={{ marginBottom: '1.5rem', padding: '1rem' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <MapPin size={16} style={{ color: 'var(--primary)' }} />
+            <select
+              className="gov-select"
+              value={selectedLocId}
+              onChange={(e) => setSelectedLocId(e.target.value)}
+              style={{ height: '36px', width: 'auto', fontSize: '0.85rem' }}
+            >
+              {locations.map((loc) => (
+                <option key={loc.id} value={loc.id}>
+                  {loc.name} ({loc.city})
+                </option>
+              ))}
+            </select>
           </div>
-          <h2 style={{ fontSize: '2rem', fontWeight: 800, margin: '0.4rem 0', color: '#10b981' }}>
-            94.8%
-          </h2>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-subtle)' }}>
-            Validated against 120,000 historical MoRTH accident records.
-          </p>
-        </Card>
 
-        <Card glow>
-          <div className="flex-between">
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>High-Probability Warning Corridors</span>
-            <AlertOctagon size={20} style={{ color: '#ef4444' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <Calendar size={16} style={{ color: 'var(--primary)' }} />
+            <span style={{ fontSize: '0.825rem', fontWeight: 600 }}>Prediction Period:</span>
+            <div style={{ display: 'flex', gap: '0.35rem' }}>
+              <Button
+                variant={period === '7d' ? 'primary' : 'secondary'}
+                size="sm"
+                onClick={() => setPeriod('7d')}
+              >
+                7 Days
+              </Button>
+              <Button
+                variant={period === '30d' ? 'primary' : 'secondary'}
+                size="sm"
+                onClick={() => setPeriod('30d')}
+              >
+                30 Days
+              </Button>
+              <Button
+                variant={period === '90d' ? 'primary' : 'secondary'}
+                size="sm"
+                onClick={() => setPeriod('90d')}
+              >
+                90 Days
+              </Button>
+            </div>
           </div>
-          <h2 style={{ fontSize: '2rem', fontWeight: 800, margin: '0.4rem 0', color: '#ef4444' }}>
-            14 Corridors
-          </h2>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-subtle)' }}>
-            Predicted &gt;80% accident probability in next 72 hours.
-          </p>
-        </Card>
-
-        <Card glow>
-          <div className="flex-between">
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Active Neural Features</span>
-            <Cpu size={20} style={{ color: 'var(--primary)' }} />
-          </div>
-          <h2 style={{ fontSize: '2rem', fontWeight: 800, margin: '0.4rem 0', color: 'var(--primary)' }}>
-            48 Variables
-          </h2>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-subtle)' }}>
-            Weather API, satellite imagery, traffic flow telemetry & pavement condition.
-          </p>
-        </Card>
+        </div>
       </div>
 
-      <ChartContainer
-        title="7-Day Forward Accident Prediction vs Baseline"
-        subtitle="AI predicted daily incident volume for coming week"
-        height={340}
-      >
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={predictionForecastData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-            <XAxis dataKey="day" stroke="var(--text-subtle)" fontSize={11} />
-            <YAxis stroke="var(--text-subtle)" fontSize={11} />
-            <Tooltip contentStyle={{ background: '#0f172a', borderColor: 'var(--bg-card-border)', borderRadius: '8px' }} />
-            <Line type="monotone" dataKey="actual" name="Historical Baseline" stroke="#64748b" strokeWidth={2} strokeDasharray="5 5" />
-            <Line type="monotone" dataKey="predicted" name="AI Predicted Count" stroke="#ef4444" strokeWidth={3} dot={{ r: 5, fill: '#ef4444' }} />
-          </LineChart>
-        </ResponsiveContainer>
-      </ChartContainer>
+      {/* Prompt 12 Specs: 4 Metric Displays (Current Risk, Predicted Risk, Prediction Confidence, Trend) */}
+      {prediction && (
+        <div className="grid-4" style={{ marginBottom: '1.5rem' }}>
+          <RiskScoreCard
+            label="Current Risk Score"
+            score={prediction.currentRisk}
+            subtitle="Baseline Historical Index"
+          />
+          <RiskScoreCard
+            label="Predicted Risk Score"
+            score={prediction.predictedRisk}
+            subtitle="Model Forecast Projection"
+          />
+          <Card>
+            <span style={{ fontSize: '0.825rem', fontWeight: 600, color: 'var(--text-muted)' }}>
+              Prediction Confidence
+            </span>
+            <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--primary)', lineHeight: 1.1, marginTop: '0.2rem' }}>
+              {prediction.confidence}%
+            </div>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-subtle)', marginTop: '0.35rem', display: 'block' }}>
+              Model Prediction Certainty
+            </span>
+          </Card>
+          <Card>
+            <span style={{ fontSize: '0.825rem', fontWeight: 600, color: 'var(--text-muted)' }}>
+              Risk Trend Vector
+            </span>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '0.2rem' }}>
+              {prediction.trend}
+            </div>
+            <Badge variant={prediction.trendLevel} />
+          </Card>
+        </div>
+      )}
+
+      {/* AI Model Disclaimer & Insight */}
+      <div style={{ marginBottom: '1.5rem' }}>
+        <AIInsightCard
+          title="Neural Model Risk Disclaimer"
+          insight="AI predictive risk scores are computed using machine learning models combining historical accident frequency, weather forecasts, time-of-day traffic volume, and road geometry variables. Model predictions represent probability indicators for resource prioritization and are not guaranteed factual outcomes."
+        />
+      </div>
+
+      {/* Historical vs Predicted Line Chart (Prompt 12 Specification) */}
+      {prediction && (
+        <Card title="Historical Risk vs Model Prediction Forecast">
+          <div style={{ height: '340px', width: '100%' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={prediction.historicalVsPredicted} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color-subtle)" />
+                <XAxis dataKey="period" stroke="var(--text-subtle)" fontSize={11} />
+                <YAxis stroke="var(--text-subtle)" fontSize={11} domain={[50, 100]} />
+                <Tooltip contentStyle={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)', borderRadius: '6px' }} />
+                <Line type="monotone" dataKey="historical" name="Historical Observed Risk" stroke="var(--text-muted)" strokeWidth={2} strokeDasharray="4 4" />
+                <Line type="monotone" dataKey="predicted" name="Model Prediction" stroke="var(--risk-critical)" strokeWidth={3} dot={{ r: 5, fill: 'var(--risk-critical)' }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      )}
     </div>
   );
 };

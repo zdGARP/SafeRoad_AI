@@ -1,80 +1,149 @@
-import React from 'react';
-import { FileText, Download, Calendar, Sparkles, FileCheck, FilePlus } from 'lucide-react';
+import React, { useState } from 'react';
+import { FileText, Download, Printer, CheckCircle2, MapPin, Sparkles, AlertTriangle } from 'lucide-react';
 import { PageHeader } from '../components/common/PageHeader';
 import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
-
-const reportTemplates = [
-  { title: 'National Highway Blackspot Audit', format: 'PDF & GeoJSON', size: '14.2 MB', frequency: 'Monthly', desc: 'Comprehensive GIS geospatial analysis of all 188 active blackspot corridors across NHAI routes.' },
-  { title: 'State-Level Safety Performance Index', format: 'PDF & XLSX', size: '8.6 MB', frequency: 'Quarterly', desc: 'Comparative state safety rankings, fatality rate metrics, and compliance scorecards.' },
-  { title: 'VRU Pedestrian & Two-Wheeler Safety Report', format: 'PDF', size: '5.4 MB', frequency: 'Monthly', desc: 'Targeted vulnerability analysis for urban arterial corridors and school zones.' },
-  { title: 'MoRTH Executive Briefing Deck (2026)', format: 'PPTX & PDF', size: '24.1 MB', frequency: 'Annual', desc: 'High-level synthesis for Parliamentary Standing Committee on Transport.' },
-];
+import { mockLocations } from '../data/locationsData';
 
 export const ReportsPage = () => {
+  const [selectedLocId, setSelectedLocId] = useState('LOC-CHENNAI-04');
+  const [generated, setGenerated] = useState(false);
+
+  const loc = mockLocations.find((l) => l.id === selectedLocId) || mockLocations[0];
+
+  const handleGenerate = () => {
+    setGenerated(true);
+    setTimeout(() => setGenerated(false), 2500);
+  };
+
   return (
     <div>
       <PageHeader
-        title="Safety Reports & Intelligence Library"
-        subtitle="Generate, schedule, and export automated multi-agency road safety audit reports."
-        badgeText="Report Automation"
+        title="Authority Safety Decision-Maker Report"
+        subtitle="Comprehensive synthesized briefing document formatted for highway authorities and municipal councils."
+        badgeText="Decision Briefing"
+        badgeVariant="primary"
         breadcrumbs={['Home', 'Reports']}
-        actions={<Button variant="primary" icon={FilePlus}>Generate Custom Report</Button>}
+        actions={
+          <>
+            <Button variant="secondary" icon={Printer} onClick={() => window.print()}>
+              Print Briefing
+            </Button>
+            <Button variant="primary" icon={Download} onClick={handleGenerate}>
+              {generated ? 'Report Generated!' : 'Export PDF'}
+            </Button>
+            <Button variant="outline" icon={Download} onClick={handleGenerate}>
+              Export CSV
+            </Button>
+          </>
+        }
       />
 
-      <div className="grid-2" style={{ marginBottom: '1.75rem' }}>
-        {reportTemplates.map((report, idx) => (
-          <Card key={idx} title={report.title} subtitle={`Frequency: ${report.frequency} • Format: ${report.format}`}>
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
-              {report.desc}
-            </p>
-            <div className="flex-between">
-              <span style={{ fontSize: '0.775rem', color: 'var(--text-subtle)' }}>File Size: {report.size}</span>
-              <Button variant="outline" size="sm" icon={Download}>
-                Export PDF
-              </Button>
-            </div>
-          </Card>
-        ))}
+      {/* Location Selector */}
+      <div className="gov-card" style={{ marginBottom: '1.5rem', padding: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <MapPin size={16} style={{ color: 'var(--primary)' }} />
+          <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Select Corridor for Briefing Report:</span>
+          <select
+            className="gov-select"
+            value={selectedLocId}
+            onChange={(e) => setSelectedLocId(e.target.value)}
+            style={{ height: '36px', width: 'auto', fontSize: '0.85rem' }}
+          >
+            {mockLocations.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.name} ({l.city})
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      <Card title="Recent Generated Safety Audits Log">
-        <div className="table-responsive">
-          <table className="custom-table">
-            <thead>
-              <tr>
-                <th>Report Title</th>
-                <th>Generated On</th>
-                <th>Jurisdiction Scope</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td style={{ fontWeight: 600 }}>August 2026 National Safety Audit</td>
-                <td>Sep 01, 2026</td>
-                <td>Pan-India</td>
-                <td><Badge variant="low">Approved</Badge></td>
-                <td><Button variant="ghost" size="sm" icon={Download}>Download</Button></td>
-              </tr>
-              <tr>
-                <td style={{ fontWeight: 600 }}>NH-44 Corridor Risk Audit</td>
-                <td>Aug 28, 2026</td>
-                <td>Haryana Section</td>
-                <td><Badge variant="low">Approved</Badge></td>
-                <td><Button variant="ghost" size="sm" icon={Download}>Download</Button></td>
-              </tr>
-              <tr>
-                <td style={{ fontWeight: 600 }}>Mumbai-Pune Exp Audit Briefing</td>
-                <td>Aug 15, 2026</td>
-                <td>Maharashtra</td>
-                <td><Badge variant="low">Approved</Badge></td>
-                <td><Button variant="ghost" size="sm" icon={Download}>Download</Button></td>
-              </tr>
-            </tbody>
-          </table>
+      {/* Professional Formal Decision-Maker Report Layout (Prompt 15 Specifications) */}
+      <Card title={`OFFICIAL SAFETY AUDIT BRIEFING — ${loc.name.toUpperCase()}`}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', padding: '0.5rem 0' }}>
+          
+          {/* Section 1: Location & Risk Overview */}
+          <div style={{ borderBottom: '1px solid var(--border-color-subtle)', paddingBottom: '1rem' }}>
+            <h4 style={{ fontSize: '0.9rem', color: 'var(--text-subtle)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+              1. Location & Jurisdiction Profile
+            </h4>
+            <div className="grid-4" style={{ gap: '0.75rem' }}>
+              <div><strong>Location:</strong> {loc.name}</div>
+              <div><strong>Jurisdiction:</strong> {loc.city}, {loc.state}</div>
+              <div><strong>Road Type:</strong> {loc.roadType}</div>
+              <div>
+                <strong>Risk Score:</strong> <span style={{ fontWeight: 800 }}>{loc.riskScore} / 100</span> <Badge variant={loc.riskLevel} />
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: Accident Statistics */}
+          <div style={{ borderBottom: '1px solid var(--border-color-subtle)', paddingBottom: '1rem' }}>
+            <h4 style={{ fontSize: '0.9rem', color: 'var(--text-subtle)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+              2. Recorded Accident Statistics
+            </h4>
+            <div className="grid-3" style={{ gap: '0.75rem' }}>
+              <div style={{ background: 'var(--bg-surface)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color-subtle)' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-subtle)' }}>Total Crashes:</span>
+                <div style={{ fontSize: '1.25rem', fontWeight: 800 }}>{loc.accidents} Incidents</div>
+              </div>
+              <div style={{ background: 'var(--bg-surface)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color-subtle)' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-subtle)' }}>Fatalities:</span>
+                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--risk-critical)' }}>{loc.fatalities} Lives</div>
+              </div>
+              <div style={{ background: 'var(--bg-surface)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color-subtle)' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-subtle)' }}>Injuries:</span>
+                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--risk-medium)' }}>{loc.injuries} Casualties</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Cause & Vulnerability Breakdown */}
+          <div style={{ borderBottom: '1px solid var(--border-color-subtle)', paddingBottom: '1rem' }}>
+            <h4 style={{ fontSize: '0.9rem', color: 'var(--text-subtle)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+              3. Cause Analysis & Vulnerable Road Users
+            </h4>
+            <div className="grid-2" style={{ gap: '1rem' }}>
+              <div>
+                <strong>Primary Cause Vectors:</strong>
+                <ul style={{ paddingLeft: '1.25rem', marginTop: '0.35rem', fontSize: '0.85rem' }}>
+                  {loc.causes.map((c, idx) => (
+                    <li key={idx}>{c.cause}: <strong>{c.percentage}%</strong></li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <strong>Vulnerable User Exposure:</strong>
+                <p style={{ fontSize: '0.85rem', marginTop: '0.35rem' }}>
+                  {loc.vulnerableUsers}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 4: Future Risk Prediction & Countermeasures */}
+          <div>
+            <h4 style={{ fontSize: '0.9rem', color: 'var(--text-subtle)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+              4. Future Predictive Forecast & Countermeasures
+            </h4>
+            <div className="grid-2" style={{ gap: '1rem' }}>
+              <div style={{ background: 'var(--primary-subtle)', padding: '0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+                <div style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: '0.2rem' }}>AI Model Forecast:</div>
+                <p style={{ fontSize: '0.825rem', lineHeight: '1.4' }}>
+                  Predicted 30-Day Risk Score: <strong>{loc.predictedRisk}/100</strong> ({loc.predictionConfidence}% Confidence).
+                </p>
+              </div>
+              <div style={{ background: 'var(--bg-surface)', padding: '0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color-subtle)' }}>
+                <div style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: '0.2rem' }}>Recommended Intervention:</div>
+                <p style={{ fontSize: '0.825rem', lineHeight: '1.4' }}>
+                  {loc.intervention}
+                </p>
+              </div>
+            </div>
+          </div>
+
         </div>
       </Card>
     </div>
